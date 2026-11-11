@@ -1,0 +1,10 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+export default function UpdatePasswordPage() {
+  const [password, setPassword] = useState(""); const [confirm, setConfirm] = useState(""); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [done, setDone] = useState(false);
+  async function submit(event: FormEvent) { event.preventDefault(); setError(""); if (password.length < 12) { setError("Choose a password with at least 12 characters."); return; } if (password !== confirm) { setError("Passwords do not match."); return; } setBusy(true); try { const { error: updateError } = await createSupabaseBrowserClient().auth.updateUser({ password }); if (updateError) throw updateError; setDone(true); } catch (cause) { setError(cause instanceof Error ? cause.message : "The password could not be updated. Restart the reset process."); } finally { setBusy(false); } }
+  return <main className="login-screen"><section className="login-panel"><div className="login-top"><div className="wordmark">SAXN</div><h1>Choose a new password</h1><p>Use at least 12 characters for the administrator account.</p></div>{done ? <div className="success-box" role="status">Password updated. <Link href="/login">Sign in</Link></div> : <form onSubmit={submit} style={{ display: "grid", gap: 14 }}><label className="form-field"><span className="form-label">New password</span><input className="input" type="password" autoComplete="new-password" minLength={12} required value={password} onChange={(e) => setPassword(e.target.value)} /></label><label className="form-field"><span className="form-label">Confirm password</span><input className="input" type="password" autoComplete="new-password" minLength={12} required value={confirm} onChange={(e) => setConfirm(e.target.value)} /></label>{error && <div className="error-box" role="alert">{error}</div>}<button className="button button-primary button-wide" disabled={busy}>{busy ? "Updating…" : "Update password"}</button></form>}</section></main>;
+}
