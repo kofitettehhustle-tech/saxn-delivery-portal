@@ -13,6 +13,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { safeArchivePath, safeFilename } from "../lib/validation";
 import { supabaseStorageUploadEndpoint } from "../lib/supabase/config";
+import { MAX_ARCHIVE_SIZE_BYTES, planDeliveryArchives } from "../lib/archivePackaging";
 import { startHealthServer } from "./health";
 
 loadEnvConfig(process.cwd());
@@ -103,42 +104,72 @@ function transcodeWavToMp3(sourcePath: string, targetPath: string): Promise<bool
 
 async function processJob(job: { job_id: string; delivery_id: string; attempts: number }) {
   const workdir = await mkdtemp(join(tmpdir(), `saxn-${job.job_id}-`));
-  let archivePath = ""; let remotePath = ""; let newPreviewPath = ""; let completed = false;
+  const uploadedArchivePaths: string[] = [];
+  let newPreviewPath = "";
   let previousPreviewPath: string | null = null;
+  let previousArchivePaths: string[] = [];
   try {
-    const { data: deliveryRow, error: deliveryError } = await db.from("deliveries").select("id,track_title,service_type,message,status,reference_number,client_id,preview_enabled,preview_file_id,preview_storage_path,preview_size,expires_at").eq("id", job.delivery_id).maybeSingle();
+    const { data: deliveryRow, error: deliveryError } = await db.from("deliveries").select("id,track_title,service_type,message,status,reference_number,client_id,zip_storage_path,preview_enabled,preview_file_id,preview_storage_path,preview_size,expires_at").eq("id", job.delivery_id).maybeSingle();
     if (deliveryError || !deliveryRow) throw new Error("Delivery data could not be loaded.");
-    const [clientResult, filesResult] = await Promise.all([
+    const [clientResult, filesResult, archivesResult] = await Promise.all([
       db.from("clients").select("name").eq("id", deliveryRow.client_id).maybeSingle(),
       db.from("delivery_files").select("id,filename,original_filename,category,storage_path,file_size,mime_type").eq("delivery_id", deliveryRow.id),
+      db.from("delivery_archives").select("storage_path").eq("delivery_id", deliveryRow.id),
     ]);
-    if (clientResult.error || filesResult.error) throw new Error("Delivery client or file records could not be loaded.");
+    if (clientResult.error || filesResult.error || archivesResult.error) throw new Error("Delivery client, file, or archive records could not be loaded.");
     const delivery = { ...deliveryRow, clients: clientResult.data, delivery_files: filesResult.data ?? [] };
+    previousArchivePaths = [
+      ...(archivesResult.data ?? []).map((archive) => archive.storage_path),
+      ...(deliveryRow.zip_storage_path ? [deliveryRow.zip_storage_path] : []),
+    ];
     if (delivery.status === "REVOKED" || delivery.status === "EXPIRED" || (delivery.expires_at && Date.parse(delivery.expires_at) <= Date.now())) throw new Error("Delivery was revoked or expired before packaging.");
     if (!delivery.delivery_files.length) throw new Error("No delivery files are registered.");
-    const archiveFilename = `${safeFilename(delivery.track_title)}_SAXN.zip`;
     const folderPath = join(workdir, "sources"); await mkdir(folderPath, { recursive: true });
-    const expected = new Set<string>(); const inputFiles: Array<{ localPath: string; archiveName: string }> = []; const localFiles = new Map<string, string>();
+    const inputFiles: Array<{ id: string; localPath: string; archiveName: string; filename: string; category: string; file_size: number }> = [];
+    const localFiles = new Map<string, string>();
     for (let index = 0; index < delivery.delivery_files.length; index += 1) {
       const file = delivery.delivery_files[index]; const relative = safeArchivePath(file.category, file.filename);
       if (relative.startsWith("/") || relative.split("/").includes("..")) throw new Error("Unsafe archive entry rejected.");
+      if (inputFiles.some((existing) => existing.archiveName === relative)) throw new Error(`Duplicate archive path rejected: ${relative}`);
       const localPath = join(folderPath, `${index}-${randomUUID()}`); await downloadToFile(file.storage_path, localPath);
-      inputFiles.push({ localPath, archiveName: relative }); expected.add(relative); localFiles.set(file.id, localPath);
+      inputFiles.push({ id: file.id, localPath, archiveName: relative, filename: file.filename, category: file.category, file_size: Number(file.file_size) });
+      localFiles.set(file.id, localPath);
     }
-    const notesPath = join(workdir, "DELIVERY_NOTES.txt"); await writeFile(notesPath, notesText(delivery, delivery.clients?.name ?? "Client"), "utf8"); expected.add("DELIVERY_NOTES.txt");
-    archivePath = join(workdir, "delivery.zip");
-    await new Promise<void>((resolve, reject) => {
-      const output = createWriteStream(archivePath, { flags: "wx" }); const archive = archiver("zip", { zlib: { level: 6 } }); let finished = false;
-      const fail = (error: Error) => { if (finished) return; finished = true; output.destroy(); reject(error); };
-      output.on("close", () => { if (!finished) { finished = true; resolve(); } }); output.on("error", fail); archive.on("error", fail);
-      archive.on("warning", (error) => { if ((error as NodeJS.ErrnoException).code === "ENOENT") return; fail(error); }); archive.pipe(output);
-      inputFiles.forEach((file) => archive.file(file.localPath, { name: file.archiveName })); archive.file(notesPath, { name: "DELIVERY_NOTES.txt" }); archive.finalize().catch(fail);
-    });
-    await validateArchive(archivePath, expected);
-    const outputSize = (await stat(archivePath)).size;
+    const notesPath = join(workdir, "DELIVERY_NOTES.txt");
+    await writeFile(notesPath, notesText(delivery, delivery.clients?.name ?? "Client"), "utf8");
+    const archivePlans = planDeliveryArchives(delivery.track_title, inputFiles);
     const { data: storagePolicy } = await db.from("storage_settings").select("max_delivery_bytes").limit(1).maybeSingle();
-    if (outputSize > Number(storagePolicy?.max_delivery_bytes ?? process.env.MAX_DELIVERY_BYTES ?? 10 * 1024 ** 3)) throw new Error("Validated ZIP exceeds the configured per-delivery storage limit.");
-    remotePath = `${delivery.id}/${job.job_id}_${safeFilename(delivery.track_title)}.zip`; await uploadPrivateObject(archivePath, buckets.archives, remotePath, "application/zip");
+    const maxDeliveryBytes = Number(storagePolicy?.max_delivery_bytes ?? process.env.MAX_DELIVERY_BYTES ?? 10 * 1024 ** 3);
+    const archiveMetadata: Array<{ storage_path: string; filename: string; file_size: number }> = [];
+    let totalArchiveBytes = 0;
+    for (let index = 0; index < archivePlans.length; index += 1) {
+      const plan = archivePlans[index];
+      const archivePath = join(workdir, `delivery-${index + 1}.zip`);
+      const expected = new Set(plan.files.map((file) => safeArchivePath(file.category, file.filename)));
+      if (index === 0) expected.add("DELIVERY_NOTES.txt");
+      await new Promise<void>((resolve, reject) => {
+        const output = createWriteStream(archivePath, { flags: "wx" }); const archive = archiver("zip", { zlib: { level: 6 } }); let finished = false;
+        const fail = (error: Error) => { if (finished) return; finished = true; output.destroy(); reject(error); };
+        output.on("close", () => { if (!finished) { finished = true; resolve(); } }); output.on("error", fail); archive.on("error", fail);
+        archive.on("warning", (error) => { if ((error as NodeJS.ErrnoException).code === "ENOENT") return; fail(error); }); archive.pipe(output);
+        plan.files.forEach((file) => {
+          const localFile = inputFiles.find((candidate) => candidate.filename === file.filename && candidate.category === file.category);
+          if (!localFile) { fail(new Error(`Could not locate ${file.filename} for ZIP packaging.`)); return; }
+          archive.file(localFile.localPath, { name: localFile.archiveName });
+        });
+        if (index === 0) archive.file(notesPath, { name: "DELIVERY_NOTES.txt" });
+        archive.finalize().catch(fail);
+      });
+      await validateArchive(archivePath, expected);
+      const outputSize = (await stat(archivePath)).size;
+      if (outputSize > MAX_ARCHIVE_SIZE_BYTES) throw new Error(`${plan.filename} exceeds the 45 MiB archive limit. Split or reduce its contents before retrying.`);
+      totalArchiveBytes += outputSize;
+      if (totalArchiveBytes > maxDeliveryBytes) throw new Error("The generated ZIP files exceed the configured per-delivery storage limit.");
+      const storagePath = `${delivery.id}/${job.job_id}_${String(index + 1).padStart(2, "0")}_${plan.filename}`;
+      await uploadPrivateObject(archivePath, buckets.archives, storagePath, "application/zip");
+      uploadedArchivePaths.push(storagePath);
+      archiveMetadata.push({ storage_path: storagePath, filename: plan.filename, file_size: outputSize });
+    }
 
     previousPreviewPath = delivery.preview_storage_path ?? null;
     let previewPath: string | null = delivery.preview_enabled ? previousPreviewPath : null;
@@ -155,16 +186,18 @@ async function processJob(job: { job_id: string; delivery_id: string; attempts: 
         }
       }
     }
-    const { data: completeResult, error: completedError } = await db.rpc("complete_processing_job", {
-      p_job_id: job.job_id, p_zip_path: remotePath, p_zip_filename: archiveFilename, p_zip_size: outputSize,
-      p_preview_path: previewPath, p_preview_size: previewSize,
+    const { data: completeResult, error: completedError } = await db.rpc("complete_processing_job_with_archives", {
+      p_job_id: job.job_id, p_archives: archiveMetadata, p_preview_path: previewPath, p_preview_size: previewSize,
     });
     if (completedError || completeResult !== true) throw new Error("Validated archive could not be finalized; delivery was not marked READY.");
-    completed = true;
+    const { error: oldArchiveCleanupError } = previousArchivePaths.length
+      ? await db.storage.from(buckets.archives).remove([...new Set(previousArchivePaths)].filter((path) => !uploadedArchivePaths.includes(path)))
+      : { error: null };
+    if (oldArchiveCleanupError) console.error(`Old archives for delivery ${delivery.id} could not be removed after regeneration.`);
     if (previousPreviewPath && previousPreviewPath !== previewPath) await db.storage.from(buckets.previews).remove([previousPreviewPath]).catch(() => undefined);
-    console.info(`Packaged delivery ${delivery.id} (${expected.size} entries, ${outputSize} bytes).`);
+    console.info(`Packaged delivery ${delivery.id} (${archiveMetadata.length} archives, ${totalArchiveBytes} bytes).`);
   } catch (cause) {
-    if (remotePath) await db.storage.from(buckets.archives).remove([remotePath]).catch(() => undefined);
+    if (uploadedArchivePaths.length) await db.storage.from(buckets.archives).remove(uploadedArchivePaths).catch(() => undefined);
     if (newPreviewPath) await db.storage.from(buckets.previews).remove([newPreviewPath]).catch(() => undefined);
     const message = cause instanceof Error ? cause.message.slice(0, 800) : "Unexpected packaging failure.";
     const { error } = await db.rpc("fail_processing_job", { p_job_id: job.job_id, p_error: message, p_max_attempts: maxAttempts });

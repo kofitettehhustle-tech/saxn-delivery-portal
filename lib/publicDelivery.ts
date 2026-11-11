@@ -11,12 +11,13 @@ export async function resolvePublicDelivery(token: string) {
   if (tokenError || !tokenRow) throw new ApiError(404, "This delivery link is not available.", "DELIVERY_NOT_FOUND");
   const { data: deliveryRow, error: deliveryError } = await db.from("deliveries").select("id,client_id,track_title,service_type,message,status,zip_storage_path,zip_filename,zip_size,preview_enabled,preview_file_id,preview_storage_path,preview_mime_type,preview_size,password_hash,expires_at,revoked_at,created_at,reference_number").eq("id", tokenRow.delivery_id).maybeSingle();
   if (deliveryError || !deliveryRow) throw new ApiError(404, "This delivery link is not available.", "DELIVERY_NOT_FOUND");
-  const [clientResult, filesResult] = await Promise.all([
+  const [clientResult, filesResult, archivesResult] = await Promise.all([
     db.from("clients").select("name").eq("id", deliveryRow.client_id).maybeSingle(),
     db.from("delivery_files").select("id,filename,category,file_size,mime_type,storage_path,created_at").eq("delivery_id", deliveryRow.id).order("created_at", { ascending: true }),
+    db.from("delivery_archives").select("id,filename,file_size,storage_path").eq("delivery_id", deliveryRow.id).order("created_at", { ascending: true }),
   ]);
-  if (clientResult.error || filesResult.error) throw new ApiError(503, "Delivery details are temporarily unavailable.", "DELIVERY_READ_FAILED");
-  const delivery = { ...deliveryRow, clients: clientResult.data, delivery_files: filesResult.data ?? [] };
+  if (clientResult.error || filesResult.error || archivesResult.error) throw new ApiError(503, "Delivery details are temporarily unavailable.", "DELIVERY_READ_FAILED");
+  const delivery = { ...deliveryRow, clients: clientResult.data, delivery_files: filesResult.data ?? [], delivery_archives: archivesResult.data ?? [] };
   const expiration = tokenRow.expires_at ?? delivery.expires_at;
   if (tokenRow.revoked_at || delivery.revoked_at || delivery.status === "REVOKED") throw new ApiError(410, "This delivery link has been revoked.", "DELIVERY_REVOKED");
   if ((expiration && Date.parse(expiration) <= Date.now()) || delivery.status === "EXPIRED") {
@@ -40,7 +41,9 @@ export function sanitizePublicDelivery(resolved: Awaited<ReturnType<typeof resol
   const previewFileName = delivery.preview_storage_path ? `${(preview?.filename ?? "Preview").replace(/\.[^.]+$/, "")}.mp3` : (preview?.filename ?? null);
   return {
     clientName: delivery.clients?.name ?? "Client", trackTitle: delivery.track_title, serviceType: delivery.service_type, message: delivery.message,
-    status: delivery.status, zipFilename: delivery.zip_filename, zipSize: delivery.zip_size, previewEnabled: delivery.preview_enabled,
+    status: delivery.status, zipFilename: delivery.zip_filename, zipSize: delivery.zip_size,
+    archives: delivery.delivery_archives.map(({ id, filename, file_size }) => ({ id, filename, fileSize: file_size })),
+    previewEnabled: delivery.preview_enabled,
     previewFileName, previewMimeType: delivery.preview_mime_type ?? preview?.mime_type ?? null,
     previewFiles: (delivery.delivery_files ?? []).map((file) => ({ filename: file.filename, mimeType: file.mime_type, category: file.category })),
     deliveryDate: delivery.created_at, referenceNumber: delivery.reference_number,

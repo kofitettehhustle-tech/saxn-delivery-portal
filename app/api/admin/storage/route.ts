@@ -62,11 +62,17 @@ export async function DELETE(request: Request) {
     let cleaned = 0;
     for (const delivery of candidates) {
       const { data: active } = await db.from("processing_jobs").select("id").eq("delivery_id", delivery.id).in("status", ["queued", "processing"]).maybeSingle(); if (active) continue;
-      const { data: files, error: filesError } = await db.from("delivery_files").select("storage_path").eq("delivery_id", delivery.id); if (filesError) throw new ApiError(503, "Could not inspect original files for cleanup.", "CLEANUP_QUERY_FAILED");
+      const [{ data: files, error: filesError }, { data: archives, error: archivesError }] = await Promise.all([
+        db.from("delivery_files").select("storage_path").eq("delivery_id", delivery.id),
+        db.from("delivery_archives").select("storage_path").eq("delivery_id", delivery.id),
+      ]);
+      if (filesError || archivesError) throw new ApiError(503, "Could not inspect delivery files for cleanup.", "CLEANUP_QUERY_FAILED");
       if (files?.length) await removePrivateObjects("originals", files.map((file) => file.storage_path));
-      if (delivery.zip_storage_path) await removePrivateObjects("archives", [delivery.zip_storage_path]);
+      const archivePaths = [...new Set([...(archives ?? []).map((archive) => archive.storage_path), ...(delivery.zip_storage_path ? [delivery.zip_storage_path] : [])])];
+      if (archivePaths.length) await removePrivateObjects("archives", archivePaths);
       if (delivery.preview_storage_path) await removePrivateObjects("previews", [delivery.preview_storage_path]);
       const { error: fileError } = await db.from("delivery_files").delete().eq("delivery_id", delivery.id); if (fileError) throw new ApiError(503, "Objects were removed but file records could not be cleared; stop cleanup and review the delivery.", "CLEANUP_RECORD_FAILED");
+      const { error: archiveError } = await db.from("delivery_archives").delete().eq("delivery_id", delivery.id); if (archiveError) throw new ApiError(503, "Archive objects were removed but their records could not be cleared.", "CLEANUP_RECORD_FAILED");
       const { error: updateError } = await db.from("deliveries").update({ status: delivery.status === "REVOKED" ? "REVOKED" : "EXPIRED", zip_storage_path: null, zip_size: null, preview_storage_path: null, preview_size: null, preview_mime_type: null, updated_at: new Date().toISOString() }).eq("id", delivery.id);
       if (updateError) throw new ApiError(503, "Objects were removed but delivery metadata could not be updated.", "CLEANUP_RECORD_FAILED"); cleaned += 1;
     }

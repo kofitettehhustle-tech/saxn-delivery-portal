@@ -14,6 +14,7 @@ type Delivery = {
   created_at: Timestamp; updated_at: Timestamp;
 };
 type DeliveryFile = { id: Id; delivery_id: Id; filename: string; original_filename: string; category: string; storage_path: string; file_size: number; mime_type: string; created_at: Timestamp };
+type DeliveryArchive = { id: Id; delivery_id: Id; filename: string; storage_path: string; file_size: number; created_at: Timestamp };
 type DeliveryToken = { id: Id; delivery_id: Id; token_hash: string; password_hash: string | null; expires_at: Timestamp | null; revoked_at: Timestamp | null; created_at: Timestamp };
 type DownloadEvent = { id: Id; delivery_id: Id; event_type: string; created_at: Timestamp };
 type ProcessingJob = { id: Id; delivery_id: Id; status: string; attempts: number; error_message: string | null; locked_at: Timestamp | null; created_at: Timestamp; updated_at: Timestamp };
@@ -28,6 +29,7 @@ export type Database = {
       clients: Table<Client>;
       deliveries: Table<Delivery>;
       delivery_files: Table<DeliveryFile>;
+      delivery_archives: Table<DeliveryArchive>;
       delivery_tokens: Table<DeliveryToken>;
       download_events: Table<DownloadEvent>;
       processing_jobs: Table<ProcessingJob>;
@@ -41,6 +43,7 @@ export type Database = {
       claim_processing_job: { Args: Record<PropertyKey, never>; Returns: { job_id: Id; delivery_id: Id; attempts: number }[] };
       requeue_stale_processing_jobs: { Args: { p_stale_seconds: number; p_max_attempts: number }; Returns: number };
       complete_processing_job: { Args: { p_job_id: Id; p_zip_path: string; p_zip_filename: string; p_zip_size: number; p_preview_path: string | null; p_preview_size: number | null }; Returns: boolean };
+      complete_processing_job_with_archives: { Args: { p_job_id: Id; p_archives: Json; p_preview_path: string | null; p_preview_size: number | null }; Returns: boolean };
       fail_processing_job: { Args: { p_job_id: Id; p_error: string; p_max_attempts: number }; Returns: boolean };
       get_saxn_dashboard_metrics: { Args: Record<PropertyKey, never>; Returns: { total: number; ready: number; downloaded: number; awaiting: number; expired: number; revoked: number; storage_bytes: number }[] };
     };

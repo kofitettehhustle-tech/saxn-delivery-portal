@@ -162,9 +162,12 @@ export async function safelyDeleteDelivery(deliveryId: string) {
   const { data: activeJob } = await db.from("processing_jobs").select("id").eq("delivery_id", deliveryId).in("status", ["queued", "processing"]).maybeSingle();
   if (activeJob) throw new ApiError(409, "An active worker job still owns this delivery.", "DELIVERY_ACTIVE");
   const { data: files } = await db.from("delivery_files").select("storage_path").eq("delivery_id", deliveryId);
+  const { data: archives, error: archivesError } = await db.from("delivery_archives").select("storage_path").eq("delivery_id", deliveryId);
+  if (archivesError) throw new ApiError(503, "Could not inspect delivery archives for deletion.", "DELIVERY_DELETE_FAILED");
   const originals = (files ?? []).map((file) => file.storage_path);
   if (originals.length) await removePrivateObjects("originals", originals);
-  if (delivery.zip_storage_path) await removePrivateObjects("archives", [delivery.zip_storage_path]);
+  const archivePaths = [...new Set([...(archives ?? []).map((archive) => archive.storage_path), ...(delivery.zip_storage_path ? [delivery.zip_storage_path] : [])])];
+  if (archivePaths.length) await removePrivateObjects("archives", archivePaths);
   if (delivery.preview_storage_path) await removePrivateObjects("previews", [delivery.preview_storage_path]);
   const { error: deleteError } = await db.from("deliveries").delete().eq("id", deliveryId);
   if (deleteError) throw new ApiError(503, "Files were removed but the delivery record could not be deleted; contact the administrator before retrying.", "DELIVERY_DELETE_FAILED");

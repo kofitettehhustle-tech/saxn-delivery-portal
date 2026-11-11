@@ -4,6 +4,7 @@ import { hashDeliveryToken, newDeliveryToken, tokenLooksValid } from "../lib/sec
 import { createDeliveryUrl } from "../lib/publicUrl";
 import { allowedMime, safeArchiveFolder, safeArchivePath, safeFilename, formatBytes } from "../lib/validation";
 import { supabaseStorageUploadEndpoint } from "../lib/supabase/config";
+import { MAX_ARCHIVE_SIZE_BYTES, planDeliveryArchives } from "../lib/archivePackaging";
 
 test("delivery tokens are unpredictable base64url bearer credentials with stable hashes", () => {
   const first = newDeliveryToken(); const second = newDeliveryToken();
@@ -53,6 +54,26 @@ test("ZIP paths group WAV and MP3 only for finished tracks and instrumentals", (
   assert.equal(safeArchivePath("04_VOCAL_TRACKS", "vocals.wav"), "04_VOCAL_TRACKS/vocals.wav");
   assert.equal(safeArchivePath("01_FINISHED_TRACKS", "notes.pdf"), "01_FINISHED_TRACKS/notes.pdf");
   assert.equal(safeArchivePath("../../root", "song.wav"), "05_OTHER/song.wav");
+});
+
+test("delivery archives keep all MP3s together and split WAVs per track", () => {
+  const plans = planDeliveryArchives("Nyame", [
+    { filename: "finished.mp3", category: "01_FINISHED_TRACKS", file_size: 2_400_000 },
+    { filename: "instrumental.mp3", category: "02_INSTRUMENTALS", file_size: 2_400_000 },
+    { filename: "finished.wav", category: "01_FINISHED_TRACKS", file_size: 41_300_000 },
+    { filename: "instrumental.wav", category: "02_INSTRUMENTALS", file_size: 41_300_000 },
+  ]);
+  assert.equal(plans.length, 3);
+  assert.deepEqual(plans[0].files.map((file) => file.filename), ["finished.mp3", "instrumental.mp3"]);
+  assert.equal(plans[0].filename, "Nyame_MP3.zip");
+  assert.deepEqual(plans.slice(1).map((plan) => plan.files.length), [1, 1]);
+  assert.ok(41_300_000 < MAX_ARCHIVE_SIZE_BYTES);
+});
+
+test("oversized source files fail archive planning explicitly", () => {
+  assert.throws(() => planDeliveryArchives("Nyame", [
+    { filename: "large.wav", category: "01_FINISHED_TRACKS", file_size: MAX_ARCHIVE_SIZE_BYTES + 1 },
+  ]), /too large to fit/);
 });
 
 test("file allowlist checks extension and MIME, and output sizes are stable", () => {

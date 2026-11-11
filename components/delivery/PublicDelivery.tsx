@@ -3,7 +3,7 @@
 import { CSSProperties, FormEvent, useCallback, useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 
-type Delivery = { id: string; clientName: string; trackTitle: string; serviceType: string; message: string | null; status: string; zipFilename: string | null; zipSize: number | null; previewEnabled: boolean; previewFileName: string | null; previewMimeType: string | null; previewFiles: { filename: string; mimeType: string; category: string }[]; deliveryDate: string; referenceNumber: string; expiresAt: string | null; requiresPassword: boolean; passwordVerified: boolean };
+type Delivery = { id: string; clientName: string; trackTitle: string; serviceType: string; message: string | null; status: string; zipFilename: string | null; zipSize: number | null; archives: { id: string; filename: string; fileSize: number }[]; previewEnabled: boolean; previewFileName: string | null; previewMimeType: string | null; previewFiles: { filename: string; mimeType: string; category: string }[]; deliveryDate: string; referenceNumber: string; expiresAt: string | null; requiresPassword: boolean; passwordVerified: boolean };
 type Brand = { brandName: string; location: string; tagline: string | null; contactEmail: string | null; socialLinks: Record<string, string>; logoUrl: string | null };
 type Payload = { delivery?: Delivery; brand?: Brand; locked?: boolean; passwordRequired?: boolean };
 
@@ -107,7 +107,7 @@ export function PublicDelivery({ token }: { token: string }) {
   }, [token]);
   useEffect(() => { void load(); }, [load]);
   async function unlock(event: FormEvent) { event.preventDefault(); setBusy(true); setError(""); try { const response = await fetch(`/api/public/d/${token}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password }) }); const body = await response.json(); if (!response.ok) throw new Error(body.error || "Password verification failed."); setPayload(body); setPassword(""); } catch (cause) { setError(cause instanceof Error ? cause.message : "Password verification failed."); } finally { setBusy(false); } }
-  async function download() { setBusy(true); setDownloadError(""); setFeedback("Requesting a secure download link…"); try { const response = await fetch(`/api/public/d/${token}/download`, { cache: "no-store" }); const body = await response.json(); if (!response.ok) throw new Error(body.error || "Download could not start."); setFeedback("Your secure download is starting."); window.location.assign(body.signedUrl); } catch (cause) { setFeedback(""); setDownloadError(cause instanceof Error ? cause.message : "Download could not start."); } finally { setBusy(false); } }
+  async function download(archiveId?: string) { setBusy(true); setDownloadError(""); setFeedback("Requesting a secure download link…"); try { const query = archiveId ? `?archiveId=${encodeURIComponent(archiveId)}` : ""; const response = await fetch(`/api/public/d/${token}/download${query}`, { cache: "no-store" }); const body = await response.json(); if (!response.ok) throw new Error(body.error || "Download could not start."); setFeedback("Your secure download is starting."); window.location.assign(body.signedUrl); } catch (cause) { setFeedback(""); setDownloadError(cause instanceof Error ? cause.message : "Download could not start."); } finally { setBusy(false); } }
   const delivery = payload?.delivery; const brand = payload?.brand ?? null; const socials = brand?.socialLinks ?? {};
   useEffect(() => {
     const previewIndex = delivery?.previewFiles.findIndex((file) => file.filename === delivery.previewFileName) ?? -1;
@@ -149,8 +149,10 @@ export function PublicDelivery({ token }: { token: string }) {
   }, [brand?.logoUrl]);
   const themeStyle = { "--brand-accent-rgb": brandAccent } as CSSProperties;
   const brandName = brand?.brandName || "SAXN";
-  const downloadButton = delivery?.status === "READY"
-    ? <button className="poster-download" onClick={() => void download()} disabled={busy}>{busy ? "Preparing secure download…" : `Download ${delivery.zipFilename || "project ZIP"}`}</button>
+  const downloadButtons = delivery?.status === "READY"
+    ? delivery.archives.length
+      ? delivery.archives.map((archive) => <button key={archive.id} className="poster-download" onClick={() => void download(archive.id)} disabled={busy}>Download {archive.filename}</button>)
+      : <button className="poster-download" onClick={() => void download()} disabled={busy}>{busy ? "Preparing secure download…" : `Download ${delivery.zipFilename || "project ZIP"}`}</button>
     : <div className="poster-download-notice" role="status">{delivery?.status === "FAILED" ? "The studio is reviewing your package." : "Your private package is still being prepared."}</div>;
   return <div className="delivery-page delivery-poster-page" style={themeStyle}>
     {loading ? <main className="poster-state"><div className="empty-mark">⌁</div>Opening your private delivery…</main>
@@ -162,7 +164,7 @@ export function PublicDelivery({ token }: { token: string }) {
           <ArtworkCarousel files={delivery.previewFiles ?? []} selected={selectedCard} onSelect={setSelectedCard} />
           <div className="poster-content">
             {delivery.previewEnabled ? <AudioPreview token={token} fileName={delivery.previewFileName || delivery.trackTitle} artistName={delivery.clientName} /> : <div className="poster-no-preview">Your studio preview is not enabled for this delivery.</div>}
-            <div className="poster-action-area">{downloadButton}{downloadError && <p className="poster-feedback poster-error" role="alert">{downloadError}</p>}{feedback && <p className="poster-feedback" role="status">{feedback}</p>}</div>
+            <div className="poster-action-area">{downloadButtons}{downloadError && <p className="poster-feedback poster-error" role="alert">{downloadError}</p>}{feedback && <p className="poster-feedback" role="status">{feedback}</p>}</div>
           </div>
           {delivery.message && <p className="poster-note">{delivery.message}</p>}
           <footer className="poster-footer">

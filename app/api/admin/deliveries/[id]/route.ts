@@ -15,14 +15,15 @@ export async function GET(_request: Request, { params }: Context) {
     const db = createSupabaseServiceClient();
     const { data: row, error } = await db.from("deliveries").select("id,client_id,track_title,service_type,message,status,zip_filename,zip_size,preview_enabled,preview_file_id,preview_mime_type,preview_size,expires_at,revoked_at,created_at,updated_at,reference_number").eq("id", params.id).maybeSingle();
     if (error || !row) throw new ApiError(404, "Delivery not found.", "DELIVERY_NOT_FOUND");
-    const [clientResult, filesResult, jobsResult, eventsResult] = await Promise.all([
+    const [clientResult, filesResult, archivesResult, jobsResult, eventsResult] = await Promise.all([
       db.from("clients").select("id,name,email,created_at").eq("id", row.client_id).maybeSingle(),
       db.from("delivery_files").select("id,filename,original_filename,category,file_size,mime_type,created_at").eq("delivery_id", row.id),
+      db.from("delivery_archives").select("id,filename,file_size").eq("delivery_id", row.id).order("created_at", { ascending: true }),
       db.from("processing_jobs").select("id,status,attempts,error_message,created_at,updated_at").eq("delivery_id", row.id).order("created_at", { ascending: false }),
       db.from("download_events").select("id,event_type,created_at").eq("delivery_id", row.id).order("created_at", { ascending: false }).limit(100),
     ]);
-    if (clientResult.error || filesResult.error || jobsResult.error || eventsResult.error) throw new ApiError(503, "Could not load delivery details.", "DELIVERY_READ_FAILED");
-    return NextResponse.json({ delivery: { ...row, clients: clientResult.data, delivery_files: filesResult.data ?? [], processing_jobs: jobsResult.data ?? [], download_events: eventsResult.data ?? [] } }, { headers: noStoreHeaders() });
+    if (clientResult.error || filesResult.error || archivesResult.error || jobsResult.error || eventsResult.error) throw new ApiError(503, "Could not load delivery details.", "DELIVERY_READ_FAILED");
+    return NextResponse.json({ delivery: { ...row, clients: clientResult.data, delivery_files: filesResult.data ?? [], delivery_archives: archivesResult.data ?? [], processing_jobs: jobsResult.data ?? [], download_events: eventsResult.data ?? [] } }, { headers: noStoreHeaders() });
   } catch (error) { return jsonError(error); }
 }
 export async function PATCH(request: Request, { params }: Context) {
