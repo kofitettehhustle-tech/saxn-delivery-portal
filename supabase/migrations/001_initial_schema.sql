@@ -44,7 +44,7 @@ create table if not exists public.deliveries (
   expires_at timestamptz,
   revoked_at timestamptz,
   password_hash text,
-  reference_number text not null unique default ('SX-' || upper(substr(encode(gen_random_bytes(5),'hex'),1,10))),
+  reference_number text not null unique default ('SX-' || upper(substr(encode(extensions.gen_random_bytes(5),'hex'),1,10))),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

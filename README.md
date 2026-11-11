@@ -25,7 +25,7 @@ Originals, archives, optional previews and brand assets remain in private Supaba
 ## Supabase provisioning
 
 1. Create or select the Supabase project and keep the project URL, anon key and service-role key available only in approved secret storage. Do not place the service-role key in any `NEXT_PUBLIC_` variable or browser bundle.
-2. Review and run, in order, `database/migrations/001_initial_schema.sql`, `002_storage_and_worker.sql`, `003_preview_and_worker_hardening.sql`, and `004_dashboard_metrics.sql` in the Supabase SQL editor or through the Supabase CLI linked to the intended project. Migrations create RLS, service-role-only worker/dashboard RPCs, private buckets and optional preview metadata. Review the project ref before applying them; the scripts are not executed by this repository automatically.
+2. The four ordered SQL migrations live in `supabase/migrations/` and are managed by the Supabase CLI. After installing the project dependencies, link to the intended project with `npx supabase link --project-ref <project-ref>`, review its history with `npx supabase migration list --remote`, then inspect the proposed changes with `npx supabase db push --dry-run --remote`. Only run `npx supabase db push --remote` after confirming the target project and migration plan. Migrations create RLS, service-role-only worker/dashboard RPCs, private buckets and optional preview metadata. If migrations were previously run manually in the dashboard, reconcile the remote migration history with the local files before applying anything; do not blindly rerun them.
 3. In Supabase Auth, disable public user signups. Create/invite the first user from the Supabase dashboard or an authorized admin workflow; no public registration route exists in this application. Then provision that existing account as an active portal administrator using a trusted SQL session (replace the placeholder email and display name):
 
    ```sql
@@ -49,6 +49,7 @@ Originals, archives, optional previews and brand assets remain in private Supaba
 Copy-Item .env.example .env.local
 # Edit .env.local using a trusted editor and replace all placeholder values.
 npm install
+npx supabase start
 npm run typecheck
 npm test
 npm run dev -- --hostname 127.0.0.1 --port 3000
