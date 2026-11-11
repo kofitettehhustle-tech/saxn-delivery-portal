@@ -35,17 +35,19 @@ function HeadphonePortrait() {
     <defs>
       <linearGradient id="headphone-shine" x1="0" x2="1" y1="0" y2="1"><stop stopColor="rgba(var(--brand-accent-rgb),.95)" /><stop offset="1" stopColor="rgba(var(--brand-accent-rgb),.35)" /></linearGradient>
     </defs>
-    <path d="M66 580c17-67 60-110 133-139l42-30 70 4 43 29c56 25 93 69 107 136H66Z" fill="#030504" />
-    <path d="M222 381v82c23 22 70 25 93 0l-9-92-84 10Z" fill="#070b08" />
-    <path d="M195 159c-5-49 14-91 51-112 26-15 63-17 92-4 34 15 52 47 51 88 20 10 34 34 34 61 0 23-10 42-26 55-4 47-31 80-74 90-42 10-88-5-108-38-11-18-12-36-11-52-19-8-26-20-20-33-12-10-15-23-9-35-11-7-14-18-10-30-9-7-12-16-10-26Z" fill="#030504" />
-    <path d="M211 147c20-43 60-66 103-59 31 5 54 24 68 52-20-8-39-8-58-2-18 6-32 19-51 20-20 2-39-6-62-11Z" fill="#010302" />
-    <path d="M201 172c-4 14-6 29-5 43l-20 23 18 10c-4 13 3 21 17 26-2 26 11 47 33 60 21 12 50 14 74 4 25-11 38-32 40-60 2-30-4-64-17-92-25-37-103-45-140-14Z" fill="#070b08" />
-    <path d="M181 213c-8 9-12 20-10 28 1 6 8 11 18 14l-11 11c-2 5 5 9 15 10l-8 10c2 8 11 12 23 11 7 28 24 45 47 52 26 8 53 1 68-17 12-15 16-36 16-59v-48c-20 5-39-1-51-17-8-11-12-27-15-42-10 13-24 21-42 24-16 3-31 1-50 7Z" fill="#090e0b" />
-    <path d="M187 205c-4-77 42-127 106-128 67-2 111 45 111 125" fill="none" stroke="#101711" strokeWidth="23" strokeLinecap="round" />
-    <path d="M187 205c-4-77 42-127 106-128 67-2 111 45 111 125" fill="none" stroke="url(#headphone-shine)" strokeWidth="3" strokeLinecap="round" />
-    <path d="M367 178c21 4 34 23 34 51v24c0 25-13 43-34 47l-11-10V187l11-9Z" fill="#111812" stroke="url(#headphone-shine)" strokeWidth="4" />
-    <rect x="366" y="192" width="23" height="78" rx="11" fill="#070b08" />
-    <path d="M385 299c-7 75-38 111-84 132" fill="none" stroke="rgba(var(--brand-accent-rgb),.48)" strokeWidth="2" />
+    <path d="M77 580c20-77 65-124 145-153l47-39 67 8 44 37c54 34 83 79 96 147H77Z" fill="#030504" />
+    <path d="M229 358v92c18 20 70 27 103 2l-13-104-90 10Z" fill="#070b08" />
+    <path d="M176 214c-7-84 37-142 108-145 70-3 116 48 111 135" fill="none" stroke="#111812" strokeWidth="25" strokeLinecap="round" />
+    <path d="M176 214c-7-84 37-142 108-145 70-3 116 48 111 135" fill="none" stroke="url(#headphone-shine)" strokeWidth="3" strokeLinecap="round" />
+    <path d="M193 218c-17-6-28-23-23-40-8-18 1-37 18-45-3-19 11-37 30-39 9-21 32-29 52-17 18-13 42-7 51 12 21-1 37 15 35 36 18 10 23 30 13 47 12 18 6 39-12 50l-17 28-30-28-85 20-30-19Z" fill="#010302" />
+    <g fill="#010302">
+      <circle cx="202" cy="128" r="27" /><circle cx="227" cy="101" r="29" /><circle cx="261" cy="91" r="31" />
+      <circle cx="294" cy="100" r="30" /><circle cx="319" cy="125" r="27" /><circle cx="331" cy="154" r="25" />
+    </g>
+    <path d="M321 151c-27-17-68-15-94 4-21 15-29 37-29 62l-3 20-40 29c-6 7 0 12 16 15l-22 14c-5 5 1 11 16 13l-11 13c-2 7 7 12 22 14 6 26 23 45 47 56l-1 50c-17 23-46 38-80 51l-34 40h267c-15-62-49-103-102-129l-28-12-5-39c38-16 51-54 44-104-2-22-6-39-12-53Z" fill="#121a14" stroke="rgba(var(--brand-accent-rgb),.3)" strokeWidth="2.5" strokeLinejoin="round" />
+    <path d="M359 183c20 4 31 22 30 47l-2 33c-1 22-14 37-34 39l-11-11 7-98 10-10Z" fill="#111812" stroke="url(#headphone-shine)" strokeWidth="4" />
+    <ellipse cx="358" cy="235" rx="12" ry="34" fill="#070b08" />
+    <path d="M377 300c-8 65-39 104-86 130" fill="none" stroke="rgba(var(--brand-accent-rgb),.4)" strokeWidth="2" />
   </svg>;
 }
 
@@ -70,15 +72,32 @@ function AudioPreview({ token, fileName, artistName }: { token: string; fileName
 }
 
 export function PublicDelivery({ token }: { token: string }) {
-  const [payload, setPayload] = useState<Payload | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [password, setPassword] = useState(""); const [busy, setBusy] = useState(false); const [feedback, setFeedback] = useState(""); const [downloadError, setDownloadError] = useState(""); const [brandAccent, setBrandAccent] = useState("22, 216, 112");
-  const load = useCallback(async () => { setLoading(true); setError(""); try { const response = await fetch(`/api/public/d/${token}`, { cache: "no-store" }); const body = await response.json(); if (response.status === 401 && body.passwordRequired) { setPayload({ locked: true, passwordRequired: true }); return; } if (!response.ok) throw new Error(body.error || "This delivery link is unavailable."); setPayload(body); } catch (cause) { setError(cause instanceof Error ? cause.message : "This delivery link is unavailable."); } finally { setLoading(false); } }, [token]);
+  const [payload, setPayload] = useState<Payload | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [password, setPassword] = useState(""); const [busy, setBusy] = useState(false); const [feedback, setFeedback] = useState(""); const [downloadError, setDownloadError] = useState(""); const [brandAccent, setBrandAccent] = useState("220, 228, 222");
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/public/d/${token}`, { cache: "no-store" });
+      const body = await response.json();
+      if (response.status === 401 && body.passwordRequired) {
+        setPayload({ locked: true, passwordRequired: true });
+        return;
+      }
+      if (!response.ok) throw new Error(body.error || "This delivery link is unavailable.");
+      setPayload(body);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "This delivery link is unavailable.");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
   useEffect(() => { void load(); }, [load]);
   async function unlock(event: FormEvent) { event.preventDefault(); setBusy(true); setError(""); try { const response = await fetch(`/api/public/d/${token}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password }) }); const body = await response.json(); if (!response.ok) throw new Error(body.error || "Password verification failed."); setPayload(body); setPassword(""); } catch (cause) { setError(cause instanceof Error ? cause.message : "Password verification failed."); } finally { setBusy(false); } }
   async function download() { setBusy(true); setDownloadError(""); setFeedback("Requesting a secure download link…"); try { const response = await fetch(`/api/public/d/${token}/download`, { cache: "no-store" }); const body = await response.json(); if (!response.ok) throw new Error(body.error || "Download could not start."); setFeedback("Your secure download is starting."); window.location.assign(body.signedUrl); } catch (cause) { setFeedback(""); setDownloadError(cause instanceof Error ? cause.message : "Download could not start."); } finally { setBusy(false); } }
   const delivery = payload?.delivery; const brand = payload?.brand ?? null; const socials = brand?.socialLinks ?? {};
   const socialEntries = Object.entries(socials).filter(([, url]) => typeof url === "string" && url.length > 0);
   useEffect(() => {
-    if (!brand?.logoUrl) { setBrandAccent("22, 216, 112"); return; }
+    if (!brand?.logoUrl) { setBrandAccent("220, 228, 222"); return; }
     let active = true;
     const image = new window.Image();
     image.crossOrigin = "anonymous";
@@ -89,22 +108,25 @@ export function PublicDelivery({ token }: { token: string }) {
         context.drawImage(image, 0, 0, 48, 48);
         const pixels = context.getImageData(0, 0, 48, 48).data;
         const colors = new Map<number, { count: number; r: number; g: number; b: number }>();
+        let neutral = { count: 0, r: 0, g: 0, b: 0 };
         for (let i = 0; i < pixels.length; i += 4) {
           const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2], alpha = pixels[i + 3];
           const max = Math.max(r, g, b), min = Math.min(r, g, b);
-          if (alpha < 180 || max < 55 || max > 248 || (max - min) / max < 0.2) continue;
+          if (alpha < 180 || max < 55 || max > 248) continue;
+          if ((max - min) / max < 0.2) { neutral.count++; neutral.r += r; neutral.g += g; neutral.b += b; continue; }
           const hue = Math.round((Math.atan2(Math.sqrt(3) * (g - b), 2 * r - g - b) * 180 / Math.PI + 360) % 360);
           const bucket = Math.floor(hue / 15);
           const color = colors.get(bucket) ?? { count: 0, r: 0, g: 0, b: 0 };
           color.count++; color.r += r; color.g += g; color.b += b; colors.set(bucket, color);
         }
         const dominant = [...colors.values()].sort((a, b) => b.count - a.count)[0];
-        if (active && dominant) setBrandAccent(`${Math.round(dominant.r / dominant.count)}, ${Math.round(dominant.g / dominant.count)}, ${Math.round(dominant.b / dominant.count)}`);
+        const sampled = dominant ?? (neutral.count ? neutral : null);
+        if (active && sampled) setBrandAccent(`${Math.round(sampled.r / sampled.count)}, ${Math.round(sampled.g / sampled.count)}, ${Math.round(sampled.b / sampled.count)}`);
       } catch {
-        if (active) setBrandAccent("22, 216, 112");
+        if (active) setBrandAccent("220, 228, 222");
       }
     };
-    image.onerror = () => { if (active) setBrandAccent("22, 216, 112"); };
+    image.onerror = () => { if (active) setBrandAccent("220, 228, 222"); };
     image.src = brand.logoUrl;
     return () => { active = false; };
   }, [brand?.logoUrl]);
@@ -119,10 +141,9 @@ export function PublicDelivery({ token }: { token: string }) {
       : payload?.locked ? <main className="poster-state"><section className="delivery-panel poster-password"><div className="eyebrow">Protected delivery</div><h1 className="page-title" style={{ margin: "11px 0" }}>Enter your access password.</h1><p className="muted">This private handoff is password protected.</p><form onSubmit={unlock} style={{ display: "grid", gap: 12, marginTop: 22 }}><label className="form-field"><span className="form-label">Delivery password</span><input className="input" type="password" required maxLength={128} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>{error && <div className="error-box" role="alert">{error}</div>}<button className="button button-primary" disabled={busy}>{busy ? "Checking…" : "Unlock delivery"}</button></form></section></main>
       : delivery ? <main className="poster-main">
         <section className="delivery-poster">
-          <div className="poster-halo" aria-hidden="true" />
           {brand?.logoUrl && <Image className="poster-brand-emblem" src={brand.logoUrl} alt="" width={500} height={500} unoptimized />}
           <HeadphonePortrait />
-          {!brand?.logoUrl && <div className="poster-brand-emblem poster-brand-emblem-fallback" aria-hidden="true"><span>{brandName}</span></div>}
+          {!brand?.logoUrl && <div className="poster-brand-emblem-fallback" aria-hidden="true"><span>{brandName}</span></div>}
           <div className="poster-content">
             <div className="poster-status">{delivery.status === "READY" ? "PRIVATE STUDIO DELIVERY" : delivery.status === "FAILED" ? "PACKAGE BEING REVIEWED" : "YOUR PROJECT IS BEING PREPARED"}</div>
             <h1 className="poster-heading">{delivery.status === "READY" ? "YOUR MUSIC IS READY." : delivery.status === "FAILED" ? "DELIVERY IN PROGRESS." : "YOUR PROJECT IS ALMOST READY."}</h1>
