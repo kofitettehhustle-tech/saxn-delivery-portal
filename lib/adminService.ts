@@ -74,7 +74,16 @@ export async function createDelivery(input: unknown) {
     return { delivery_id: delivery.id, filename, original_filename: safeFilename(file.originalFilename), category: file.category, storage_path: `${delivery.id}/${randomUUID()}_${filename}`, file_size: file.fileSize, mime_type: file.mimeType };
   });
   const { data: inserted, error: filesError } = await db.from("delivery_files").insert(files).select("id,filename,original_filename,category,storage_path,file_size,mime_type");
-  if (filesError || !inserted) { await db.from("deliveries").delete().eq("id", delivery.id); if (createdClientId) await db.from("clients").delete().eq("id", createdClientId); throw new ApiError(503, "Could not register the delivery files.", "FILE_RECORD_CREATE_FAILED"); }
+  if (filesError || !inserted) {
+    await db.from("deliveries").delete().eq("id", delivery.id);
+    if (createdClientId) await db.from("clients").delete().eq("id", createdClientId);
+    const categoryConstraintFailure = filesError?.code === "23514" &&
+      (filesError.message.includes("delivery_files_category_check") || filesError.details?.includes("category"));
+    if (categoryConstraintFailure) {
+      throw new ApiError(503, "The database has not been updated for the new file categories. Apply migration 005_delivery_file_categories.sql in Supabase, then retry.", "FILE_CATEGORY_MIGRATION_REQUIRED");
+    }
+    throw new ApiError(503, "Could not register the delivery files.", "FILE_RECORD_CREATE_FAILED");
+  }
   if (values.previewEnabled && values.previewFileIndex != null) {
     const preview = inserted[values.previewFileIndex];
     const { error } = await db.from("deliveries").update({ preview_file_id: preview.id }).eq("id", delivery.id);
