@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { hashDeliveryToken, newDeliveryToken, tokenLooksValid } from "../lib/security";
 import { createDeliveryUrl } from "../lib/publicUrl";
 import { allowedMime, safeArchiveFolder, safeArchivePath, safeFilename, formatBytes } from "../lib/validation";
+import { supabaseStorageUploadEndpoint } from "../lib/supabase/config";
 
 test("delivery tokens are unpredictable base64url bearer credentials with stable hashes", () => {
   const first = newDeliveryToken(); const second = newDeliveryToken();
@@ -24,6 +25,17 @@ test("private delivery URLs use the production domain on preview deployments", (
     createDeliveryUrl("private-token", "https://preview.vercel.app", {
       PUBLIC_APP_URL: "http://public.example.com",
     }),
+  );
+});
+
+test("resumable uploads use the direct Supabase Storage hostname", () => {
+  assert.equal(
+    supabaseStorageUploadEndpoint("https://project-ref.supabase.co"),
+    "https://project-ref.storage.supabase.co/storage/v1/upload/resumable",
+  );
+  assert.equal(
+    supabaseStorageUploadEndpoint("http://127.0.0.1:54321"),
+    "http://127.0.0.1:54321/storage/v1/upload/resumable",
   );
 });
 

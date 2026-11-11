@@ -3,7 +3,7 @@
 import { FormEvent, DragEvent, useEffect, useMemo, useState } from "react";
 import { Upload } from "tus-js-client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { supabasePublicConfig } from "@/lib/supabase/config";
+import { supabasePublicConfig, supabaseStorageUploadEndpoint } from "@/lib/supabase/config";
 import { fileCategories, serviceTypes, formatBytes, type FileCategory } from "@/lib/validation";
 
 type DraftFile = { id: string; file: File; filename: string; category: string; progress: number; error: string; uploaded: boolean };
@@ -40,7 +40,7 @@ export function DeliveryForm() {
           const { data: { session } } = await createSupabaseBrowserClient().auth.getSession();
           if (!session?.access_token) throw new Error("Your admin session expired. Sign in again before uploading.");
           const upload = new Upload(file, {
-            endpoint: `${config.url}/storage/v1/upload/resumable`, retryDelays: [0, 2000, 5000, 10000],
+            endpoint: supabaseStorageUploadEndpoint(config.url), retryDelays: [0, 2000, 5000, 10000],
             headers: { authorization: `Bearer ${session.access_token}`, apikey: config.anonKey, "x-upsert": "false" },
             metadata: { bucketName: bucket, objectName: path, contentType: file.type || "application/octet-stream", cacheControl: "3600" },
             chunkSize: 6 * 1024 * 1024, uploadDataDuringCreation: true, removeFingerprintOnSuccess: true,

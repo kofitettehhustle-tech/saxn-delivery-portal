@@ -12,6 +12,7 @@ import { spawn } from "node:child_process";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { safeArchivePath, safeFilename } from "../lib/validation";
+import { supabaseStorageUploadEndpoint } from "../lib/supabase/config";
 import { startHealthServer } from "./health";
 
 loadEnvConfig(process.cwd());
@@ -19,6 +20,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 if (!supabaseUrl || !serviceKey) throw new Error("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the worker environment.");
 if (/[\u0000-\u001f\u007f]/.test(serviceKey)) throw new Error("SUPABASE_SERVICE_ROLE_KEY contains unsupported control characters.");
+const storageUploadEndpoint = supabaseStorageUploadEndpoint(supabaseUrl);
 const db = createClient<any>(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } });
 const buckets = {
   originals: process.env.SUPABASE_BUCKET_ORIGINALS || "delivery-originals",
@@ -73,7 +75,7 @@ async function uploadPrivateObject(filePath: string, targetBucket: string, stora
   const size = (await stat(filePath)).size;
   await new Promise<void>((resolve, reject) => {
     const upload = new Upload(createReadStream(filePath), {
-      endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
+      endpoint: storageUploadEndpoint,
       retryDelays: [0, 3000, 8000, 15000],
       headers: { authorization: `Bearer ${serviceKey}`, apikey: serviceKey!, "x-upsert": "false" },
       metadata: { bucketName: targetBucket, objectName: storagePath, contentType, cacheControl: "3600" },
