@@ -6,12 +6,12 @@ import * as yauzl from "yauzl";
 import { createWriteStream, createReadStream } from "node:fs";
 import { mkdir, mkdtemp, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, posix } from "node:path";
+import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { safeArchiveFolder, safeFilename, type FileCategory } from "../lib/validation";
+import { safeArchivePath, safeFilename } from "../lib/validation";
 import { startHealthServer } from "./health";
 
 loadEnvConfig(process.cwd());
@@ -118,8 +118,7 @@ async function processJob(job: { job_id: string; delivery_id: string; attempts: 
     const folderPath = join(workdir, "sources"); await mkdir(folderPath, { recursive: true });
     const expected = new Set<string>(); const inputFiles: Array<{ localPath: string; archiveName: string }> = []; const localFiles = new Map<string, string>();
     for (let index = 0; index < delivery.delivery_files.length; index += 1) {
-      const file = delivery.delivery_files[index]; const category = safeArchiveFolder(file.category) as FileCategory; const safeName = safeFilename(file.filename);
-      const relative = posix.join(category, safeName);
+      const file = delivery.delivery_files[index]; const relative = safeArchivePath(file.category, file.filename);
       if (relative.startsWith("/") || relative.split("/").includes("..")) throw new Error("Unsafe archive entry rejected.");
       const localPath = join(folderPath, `${index}-${randomUUID()}`); await downloadToFile(file.storage_path, localPath);
       inputFiles.push({ localPath, archiveName: relative }); expected.add(relative); localFiles.set(file.id, localPath);

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const serviceTypes = ["Mixing", "Mastering", "Mixing & Mastering", "Beat Production", "Custom Production", "Instrumental", "Other"] as const;
-export const fileCategories = ["01_FINAL_MASTERS", "02_INSTRUMENTALS", "03_STEMS", "04_EXTRAS"] as const;
+export const fileCategories = ["01_FINISHED_TRACKS", "02_INSTRUMENTALS", "03_PERFORMANCE_TRACKS", "04_VOCAL_TRACKS", "05_OTHER"] as const;
 export const deliveryStatuses = ["DRAFT", "UPLOADING", "PROCESSING", "READY", "FAILED", "EXPIRED", "REVOKED"] as const;
 export type ServiceType = (typeof serviceTypes)[number];
 export type FileCategory = (typeof fileCategories)[number];
@@ -44,7 +44,17 @@ export function safeFilename(input: string): string {
 }
 
 export function safeArchiveFolder(category: string): FileCategory {
-  return (fileCategories as readonly string[]).includes(category) ? category as FileCategory : "04_EXTRAS";
+  return (fileCategories as readonly string[]).includes(category) ? category as FileCategory : "05_OTHER";
+}
+
+export function safeArchivePath(category: string, filename: string): string {
+  const folder = safeArchiveFolder(category);
+  const safeName = safeFilename(filename);
+  const extension = safeName.toLowerCase().split(".").pop();
+  if ((folder === "01_FINISHED_TRACKS" || folder === "02_INSTRUMENTALS") && (extension === "wav" || extension === "mp3")) {
+    return `${folder}/${extension.toUpperCase()}/${safeName}`;
+  }
+  return `${folder}/${safeName}`;
 }
 
 export function allowedMime(filename: string, mimeType: string, approvedExtensions: readonly string[] = []): boolean {

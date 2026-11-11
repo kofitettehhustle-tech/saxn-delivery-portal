@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { hashDeliveryToken, newDeliveryToken, tokenLooksValid } from "../lib/security";
 import { createDeliveryUrl } from "../lib/publicUrl";
-import { allowedMime, safeArchiveFolder, safeFilename, formatBytes } from "../lib/validation";
+import { allowedMime, safeArchiveFolder, safeArchivePath, safeFilename, formatBytes } from "../lib/validation";
 
 test("delivery tokens are unpredictable base64url bearer credentials with stable hashes", () => {
   const first = newDeliveryToken(); const second = newDeliveryToken();
@@ -30,7 +30,17 @@ test("private delivery URLs use the production domain on preview deployments", (
 test("filenames are flattened and path traversal is removed", () => {
   assert.equal(safeFilename("../../takeover.wav").includes("/"), false);
   assert.equal(safeFilename("C:\\mix\\final.wav").includes("\\"), false);
-  assert.equal(safeArchiveFolder("../../root"), "04_EXTRAS");
+  assert.equal(safeArchiveFolder("../../root"), "05_OTHER");
+});
+
+test("ZIP paths group WAV and MP3 only for finished tracks and instrumentals", () => {
+  assert.equal(safeArchivePath("01_FINISHED_TRACKS", "song.wav"), "01_FINISHED_TRACKS/WAV/song.wav");
+  assert.equal(safeArchivePath("01_FINISHED_TRACKS", "song.mp3"), "01_FINISHED_TRACKS/MP3/song.mp3");
+  assert.equal(safeArchivePath("02_INSTRUMENTALS", "beat.wav"), "02_INSTRUMENTALS/WAV/beat.wav");
+  assert.equal(safeArchivePath("03_PERFORMANCE_TRACKS", "performance.mp3"), "03_PERFORMANCE_TRACKS/performance.mp3");
+  assert.equal(safeArchivePath("04_VOCAL_TRACKS", "vocals.wav"), "04_VOCAL_TRACKS/vocals.wav");
+  assert.equal(safeArchivePath("01_FINISHED_TRACKS", "notes.pdf"), "01_FINISHED_TRACKS/notes.pdf");
+  assert.equal(safeArchivePath("../../root", "song.wav"), "05_OTHER/song.wav");
 });
 
 test("file allowlist checks extension and MIME, and output sizes are stable", () => {

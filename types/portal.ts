@@ -1,5 +1,5 @@
 export type DeliveryStatus = "DRAFT" | "UPLOADING" | "PROCESSING" | "READY" | "FAILED" | "EXPIRED" | "REVOKED";
-export type FileCategory = "01_FINAL_MASTERS" | "02_INSTRUMENTALS" | "03_STEMS" | "04_EXTRAS";
+export type FileCategory = "01_FINISHED_TRACKS" | "02_INSTRUMENTALS" | "03_PERFORMANCE_TRACKS" | "04_VOCAL_TRACKS" | "05_OTHER";
 export type ServiceType = "Mixing" | "Mastering" | "Mixing & Mastering" | "Beat Production" | "Custom Production" | "Instrumental" | "Other";
 export type ClientRecord = { id: string; name: string; email: string | null; created_at: string };
 export type DeliveryRecord = {
