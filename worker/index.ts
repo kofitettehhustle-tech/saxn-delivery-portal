@@ -16,8 +16,9 @@ import { startHealthServer } from "./health";
 
 loadEnvConfig(process.cwd());
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 if (!supabaseUrl || !serviceKey) throw new Error("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the worker environment.");
+if (/[\u0000-\u001f\u007f]/.test(serviceKey)) throw new Error("SUPABASE_SERVICE_ROLE_KEY contains unsupported control characters.");
 const db = createClient<any>(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } });
 const buckets = {
   originals: process.env.SUPABASE_BUCKET_ORIGINALS || "delivery-originals",
