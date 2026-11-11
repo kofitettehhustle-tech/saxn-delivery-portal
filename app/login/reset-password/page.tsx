@@ -19,7 +19,7 @@ export default function ResetPasswordPage() {
     finally { setBusy(false); }
   }
   return <main className="login-screen"><section className="login-panel">
-    <div className="login-top"><BrandLogo name="SAXN" /><h1>Reset password</h1><p>We&apos;ll send a secure reset link if this address belongs to an administrator.</p></div>
+    <div className="login-top"><BrandLogo name="SAXN" logoUrl={null} /><h1>Reset password</h1><p>We&apos;ll send a secure reset link if this address belongs to an administrator.</p></div>
     {sent ? <div className="success-box" role="status">If the account is eligible, a reset message has been sent. Follow its link to continue.</div> : <form onSubmit={submit} style={{ display: "grid", gap: 16 }}>
       {!supabasePublicConfig() && <div className="notice-box">Supabase is not configured. See the project setup guide.</div>}
       <label className="form-field"><span className="form-label">Administrator email</span><input className="input" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></label>
