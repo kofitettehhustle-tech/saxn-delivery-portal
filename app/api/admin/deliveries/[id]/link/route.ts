@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { assertSameOriginMutation, ApiError, jsonError, noStoreHeaders } from "@/lib/http";
 import { issueDeliveryLink } from "@/lib/links";
+import { createDeliveryUrl } from "@/lib/publicUrl";
 
 export const dynamic = "force-dynamic";
 export async function POST(request: Request, { params }: { params: { id: string } }) {
-  try { await requireAdmin(); assertSameOriginMutation(request); if (!/^[0-9a-f-]{36}$/i.test(params.id)) throw new ApiError(404, "Delivery not found.", "DELIVERY_NOT_FOUND"); const link = await issueDeliveryLink(params.id); return NextResponse.json(link, { headers: noStoreHeaders() }); }
+  try { await requireAdmin(); assertSameOriginMutation(request); if (!/^[0-9a-f-]{36}$/i.test(params.id)) throw new ApiError(404, "Delivery not found.", "DELIVERY_NOT_FOUND"); const link = await issueDeliveryLink(params.id); return NextResponse.json({ ...link, url: createDeliveryUrl(link.token, request.url) }, { headers: noStoreHeaders() }); }
   catch (error) { return jsonError(error); }
 }

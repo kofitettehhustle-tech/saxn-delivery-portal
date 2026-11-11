@@ -79,7 +79,7 @@ Set the Supabase project URL, service-role key, bucket names, `WORKER_POLL_INTER
 
 ## Production deployment
 
-1. Build/publish the Next.js application through the chosen host (for example Vercel) using the repository's normal `npm run build`/`npm start` scripts. Configure the four required environment values and private bucket names in the host secret manager. Set `PUBLIC_APP_URL` to the HTTPS origin if later notification integrations are added.
+1. Build/publish the Next.js application through the chosen host (for example Vercel) using the repository's normal `npm run build`/`npm start` scripts. Configure the four required environment values and private bucket names in the host secret manager. Private links use Vercel's production domain when system environment variables are enabled. Set `PUBLIC_APP_URL` to the canonical HTTPS origin to guarantee production links, or when deploying elsewhere.
 2. Deploy `worker/` as a separate persistent process from the same revision, with server-only Supabase credentials. Build with `npm run worker:build`; `npm run worker:start` launches the compiled entry point. Do not schedule ZIP jobs in short-lived serverless request handlers.
 3. Add the custom HTTPS domain, set Supabase Auth site/redirect URLs to the exact production origin, verify signed upload/download flows, and check web and worker health endpoints.
 4. Test with non-sensitive test audio before client data. Verify password/expiration/revocation, archive contents, preview authorization, signed URL expiry, download-request records, cleanup protections and worker retry behavior.

@@ -15,7 +15,7 @@ export function DeliveryForm() {
   const [approvedExtensions, setApprovedExtensions] = useState<string[]>([]);
   const [existingClient, setExistingClient] = useState(""); const [clientName, setClientName] = useState(""); const [clientEmail, setClientEmail] = useState(""); const [trackTitle, setTrackTitle] = useState(""); const [serviceType, setServiceType] = useState<string>(serviceTypes[0]); const [message, setMessage] = useState("");
   const [expiration, setExpiration] = useState("30"); const [customExpiresAt, setCustomExpiresAt] = useState(""); const [password, setPassword] = useState(""); const [previewEnabled, setPreviewEnabled] = useState(false); const [previewFileIndex, setPreviewFileIndex] = useState("");
-  const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [notice, setNotice] = useState(""); const [deliveryId, setDeliveryId] = useState(""); const [privateToken, setPrivateToken] = useState(""); const [dragging, setDragging] = useState(false);
+  const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [notice, setNotice] = useState(""); const [deliveryId, setDeliveryId] = useState(""); const [privateLink, setPrivateLink] = useState(""); const [dragging, setDragging] = useState(false);
   const totalBytes = useMemo(() => files.reduce((sum, item) => sum + item.file.size, 0), [files]);
   useEffect(() => { void Promise.all([fetch("/api/admin/clients", { cache: "no-store" }), fetch("/api/admin/storage", { cache: "no-store" })]).then(async ([clientsResponse, storageResponse]) => { const [clientBody, storageBody] = await Promise.all([clientsResponse.json(), storageResponse.json()]); if (clientsResponse.ok) setClients(clientBody.clients); if (storageResponse.ok) setApprovedExtensions(storageBody.settings.approved_extra_extensions ?? []); }).catch(() => undefined); }, []);
   function addFiles(list: FileList | File[]) {
@@ -65,7 +65,7 @@ export function DeliveryForm() {
     setNotice(`${verifiedBody.fileCount} file${verifiedBody.fileCount === 1 ? "" : "s"} verified. Starting ZIP packaging…`);
     const response = await fetch(`/api/admin/deliveries/${currentId}/package`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
     const body = await response.json(); if (!response.ok) throw new Error(body.error || "Could not queue packaging.");
-    setPrivateToken(body.token || ""); setNotice("Packaging is queued in the background. The delivery link is active, but share it only after the archive reaches READY.");
+    setPrivateLink(body.url || ""); setNotice("Packaging is queued in the background. The delivery link is active, but share it only after the archive reaches READY.");
   }
 
   async function submit(event: FormEvent) {
@@ -83,10 +83,10 @@ export function DeliveryForm() {
     finally { setBusy(false); }
   }
   async function retryUploads() { if (!deliveryId) return; setBusy(true); setError(""); try { await uploadAndPackage(deliveryId); } catch (cause) { setError(cause instanceof Error ? cause.message : "Upload retry failed."); } finally { setBusy(false); } }
-  async function copyLink() { if (!privateToken) return; try { await navigator.clipboard.writeText(`${window.location.origin}/d/${privateToken}`); setNotice("Private link copied. Share it only after ZIP status is READY."); } catch { setNotice(`Copy this private link: ${window.location.origin}/d/${privateToken}`); } }
+  async function copyLink() { if (!privateLink) return; try { await navigator.clipboard.writeText(privateLink); setNotice("Private link copied. Share it only after ZIP status is READY."); } catch { setNotice(`Copy this private link: ${privateLink}`); } }
 
   return <><div className="page-heading"><div><div className="eyebrow">New project handoff</div><h1 className="page-title" style={{ marginTop: 8 }}>Create a delivery.</h1><p>Build a private handoff with an auditable upload and packaging flow.</p></div></div>
-    {error && <div className="error-box" role="alert" style={{ marginBottom: 15 }}>{error}</div>}{notice && <div className="success-box" role="status" style={{ marginBottom: 15 }}>{notice}{privateToken && <button type="button" className="button button-small" onClick={() => void copyLink()} style={{ marginLeft: 12 }}>Copy private link</button>}</div>}
+    {error && <div className="error-box" role="alert" style={{ marginBottom: 15 }}>{error}</div>}{notice && <div className="success-box" role="status" style={{ marginBottom: 15 }}>{notice}{privateLink && <button type="button" className="button button-small" onClick={() => void copyLink()} style={{ marginLeft: 12 }}>Copy private link</button>}</div>}
     <form onSubmit={submit} className="card card-pad" style={{ display: "grid", gap: 25 }}>
       <section><div className="eyebrow">01 / Client & project</div><div className="form-grid" style={{ marginTop: 14 }}>
         <label className="form-field"><span className="form-label">Existing client</span><select className="select" value={existingClient} onChange={(e) => setExistingClient(e.target.value)}><option value="">Create a new client…</option>{clients.map((client) => <option key={client.id} value={client.id}>{client.name}{client.email ? ` · ${client.email}` : ""}</option>)}</select></label>

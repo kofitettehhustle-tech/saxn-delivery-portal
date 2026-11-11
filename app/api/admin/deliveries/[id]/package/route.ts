@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { assertSameOriginMutation, ApiError, jsonError, noStoreHeaders } from "@/lib/http";
 import { requestPackaging, retryPackaging } from "@/lib/adminService";
+import { createDeliveryUrl } from "@/lib/publicUrl";
 
 export const dynamic = "force-dynamic";
 type Context = { params: { id: string } };
@@ -11,6 +12,7 @@ export async function POST(request: Request, { params }: Context) {
     await requireAdmin(); assertSameOriginMutation(request); if (!validId(params.id)) throw new ApiError(404, "Delivery not found.", "DELIVERY_NOT_FOUND");
     const body = await request.json().catch(() => ({})) as { retry?: boolean };
     const result = body.retry ? await retryPackaging(params.id) : await requestPackaging(params.id);
-    return NextResponse.json({ ...result, status: "PROCESSING" }, { status: 202, headers: noStoreHeaders() });
+    const url = "token" in result && typeof result.token === "string" ? createDeliveryUrl(result.token, request.url) : undefined;
+    return NextResponse.json({ ...result, ...(url ? { url } : {}), status: "PROCESSING" }, { status: 202, headers: noStoreHeaders() });
   } catch (error) { return jsonError(error); }
 }
