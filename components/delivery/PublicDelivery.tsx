@@ -166,10 +166,11 @@ export function PublicDelivery({ token }: { token: string }) {
           </div>
           {delivery.message && <p className="poster-note">{delivery.message}</p>}
           <footer className="poster-footer">
-            <div className="poster-artist-lockup"><strong>{delivery.clientName}</strong><div className="poster-social-links">
+            <div className="poster-social-links">
               {brand?.contactEmail && <a href={`mailto:${brand.contactEmail}`} className="poster-connect-link">Contact</a>}
               {socialEntries.map(([name, url]) => <a className="poster-connect-link" key={name} href={url} target="_blank" rel="noreferrer" aria-label={name}><SocialIcon name={name} /></a>)}
-            </div></div>
+            </div>
+            <div className="poster-artist-lockup"><strong>{delivery.clientName}</strong></div>
           </footer>
         </section>
       </main> : null}
