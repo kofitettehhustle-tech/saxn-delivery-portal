@@ -13,7 +13,7 @@ export async function resolvePublicDelivery(token: string) {
   if (deliveryError || !deliveryRow) throw new ApiError(404, "This delivery link is not available.", "DELIVERY_NOT_FOUND");
   const [clientResult, filesResult] = await Promise.all([
     db.from("clients").select("name").eq("id", deliveryRow.client_id).maybeSingle(),
-    db.from("delivery_files").select("id,filename,category,file_size,mime_type,storage_path").eq("delivery_id", deliveryRow.id),
+    db.from("delivery_files").select("id,filename,category,file_size,mime_type,storage_path,created_at").eq("delivery_id", deliveryRow.id).order("created_at", { ascending: true }),
   ]);
   if (clientResult.error || filesResult.error) throw new ApiError(503, "Delivery details are temporarily unavailable.", "DELIVERY_READ_FAILED");
   const delivery = { ...deliveryRow, clients: clientResult.data, delivery_files: filesResult.data ?? [] };
@@ -42,6 +42,7 @@ export function sanitizePublicDelivery(resolved: Awaited<ReturnType<typeof resol
     clientName: delivery.clients?.name ?? "Client", trackTitle: delivery.track_title, serviceType: delivery.service_type, message: delivery.message,
     status: delivery.status, zipFilename: delivery.zip_filename, zipSize: delivery.zip_size, previewEnabled: delivery.preview_enabled,
     previewFileName, previewMimeType: delivery.preview_mime_type ?? preview?.mime_type ?? null,
+    previewFiles: (delivery.delivery_files ?? []).map((file) => ({ filename: file.filename, mimeType: file.mime_type, category: file.category })),
     deliveryDate: delivery.created_at, referenceNumber: delivery.reference_number,
     expiresAt: resolved.tokenRow.expires_at ?? delivery.expires_at, requiresPassword: resolved.requiresPassword, passwordVerified: resolved.passwordVerified,
   };
