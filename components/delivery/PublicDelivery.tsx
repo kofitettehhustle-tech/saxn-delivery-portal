@@ -33,24 +33,19 @@ function SocialIcon({ name }: { name: string }) {
 function HeadphonePortrait() {
   return <svg className="poster-portrait" viewBox="0 0 520 580" aria-hidden="true">
     <defs>
-      <radialGradient id="portrait-light"><stop stopColor="rgba(var(--brand-accent-rgb),.42)" /><stop offset="1" stopColor="rgba(var(--brand-accent-rgb),0)" /></radialGradient>
       <linearGradient id="headphone-shine" x1="0" x2="1" y1="0" y2="1"><stop stopColor="rgba(var(--brand-accent-rgb),.95)" /><stop offset="1" stopColor="rgba(var(--brand-accent-rgb),.35)" /></linearGradient>
     </defs>
-    <circle cx="266" cy="205" r="205" fill="url(#portrait-light)" />
-    <circle cx="266" cy="205" r="154" fill="none" stroke="rgba(var(--brand-accent-rgb),.88)" strokeWidth="2" />
-    <circle cx="266" cy="205" r="145" fill="none" stroke="rgba(var(--brand-accent-rgb),.12)" strokeWidth="18" />
-    <path d="M75 580c20-73 62-111 121-130l35-17 72-1 35 17c64 24 100 66 116 131H75Z" fill="#050807" />
-    <path d="M206 377v65c20 27 81 30 104 0l-9-83-95 18Z" fill="#080d0a" />
-    <path d="M182 166c-19-28-12-72 20-96 35-27 90-29 129-9 38 20 57 60 51 98 19 19 24 47 15 74 9 23 3 48-15 64-2 40-28 68-66 78-36 10-81 1-104-27-12-14-17-31-18-49-16-9-24-21-19-33-12-11-15-23-8-35-9-17-3-39 15-65Z" fill="#050807" />
-    <path d="M198 178c-7 22-9 43-6 63l-22 26 20 10c-4 15 4 25 19 31 1 32 19 56 48 65 30 10 69 3 88-20 13-16 17-38 15-60-2-29-8-54-20-77-21-40-91-61-142-38Z" fill="#090e0b" />
-    <path d="M202 158c24-42 69-54 112-37 34 14 55 42 57 76-16-18-31-32-53-37-22-5-42 6-62 7-19 1-35-7-54-9Z" fill="#040705" />
-    <path d="M181 205c-2-78 49-123 112-123 65 0 111 49 108 126" fill="none" stroke="#111a14" strokeWidth="22" strokeLinecap="round" />
-    <path d="M181 205c-2-78 49-123 112-123 65 0 111 49 108 126" fill="none" stroke="url(#headphone-shine)" strokeWidth="3" strokeLinecap="round" />
-    <rect x="163" y="188" width="46" height="106" rx="22" fill="#101712" stroke="url(#headphone-shine)" strokeWidth="4" />
-    <rect x="170" y="202" width="31" height="77" rx="15" fill="#080c09" />
-    <rect x="359" y="183" width="48" height="116" rx="23" fill="#101712" stroke="url(#headphone-shine)" strokeWidth="4" />
-    <rect x="367" y="198" width="31" height="85" rx="15" fill="#080c09" />
-    <path d="M383 296c-5 72-39 107-78 125" fill="none" stroke="rgba(var(--brand-accent-rgb),.42)" strokeWidth="2" />
+    <path d="M66 580c17-67 60-110 133-139l42-30 70 4 43 29c56 25 93 69 107 136H66Z" fill="#030504" />
+    <path d="M222 381v82c23 22 70 25 93 0l-9-92-84 10Z" fill="#070b08" />
+    <path d="M195 159c-5-49 14-91 51-112 26-15 63-17 92-4 34 15 52 47 51 88 20 10 34 34 34 61 0 23-10 42-26 55-4 47-31 80-74 90-42 10-88-5-108-38-11-18-12-36-11-52-19-8-26-20-20-33-12-10-15-23-9-35-11-7-14-18-10-30-9-7-12-16-10-26Z" fill="#030504" />
+    <path d="M211 147c20-43 60-66 103-59 31 5 54 24 68 52-20-8-39-8-58-2-18 6-32 19-51 20-20 2-39-6-62-11Z" fill="#010302" />
+    <path d="M201 172c-4 14-6 29-5 43l-20 23 18 10c-4 13 3 21 17 26-2 26 11 47 33 60 21 12 50 14 74 4 25-11 38-32 40-60 2-30-4-64-17-92-25-37-103-45-140-14Z" fill="#070b08" />
+    <path d="M181 213c-8 9-12 20-10 28 1 6 8 11 18 14l-11 11c-2 5 5 9 15 10l-8 10c2 8 11 12 23 11 7 28 24 45 47 52 26 8 53 1 68-17 12-15 16-36 16-59v-48c-20 5-39-1-51-17-8-11-12-27-15-42-10 13-24 21-42 24-16 3-31 1-50 7Z" fill="#090e0b" />
+    <path d="M187 205c-4-77 42-127 106-128 67-2 111 45 111 125" fill="none" stroke="#101711" strokeWidth="23" strokeLinecap="round" />
+    <path d="M187 205c-4-77 42-127 106-128 67-2 111 45 111 125" fill="none" stroke="url(#headphone-shine)" strokeWidth="3" strokeLinecap="round" />
+    <path d="M367 178c21 4 34 23 34 51v24c0 25-13 43-34 47l-11-10V187l11-9Z" fill="#111812" stroke="url(#headphone-shine)" strokeWidth="4" />
+    <rect x="366" y="192" width="23" height="78" rx="11" fill="#070b08" />
+    <path d="M385 299c-7 75-38 111-84 132" fill="none" stroke="rgba(var(--brand-accent-rgb),.48)" strokeWidth="2" />
   </svg>;
 }
 
@@ -125,15 +120,16 @@ export function PublicDelivery({ token }: { token: string }) {
       : delivery ? <main className="poster-main">
         <section className="delivery-poster">
           <div className="poster-halo" aria-hidden="true" />
+          {brand?.logoUrl && <Image className="poster-brand-emblem" src={brand.logoUrl} alt="" width={500} height={500} unoptimized />}
           <HeadphonePortrait />
-          <div className="poster-brand-emblem">{brand?.logoUrl ? <Image src={brand.logoUrl} alt="" width={180} height={70} unoptimized /> : <span>{brandName}</span>}</div>
+          {!brand?.logoUrl && <div className="poster-brand-emblem poster-brand-emblem-fallback" aria-hidden="true"><span>{brandName}</span></div>}
           <div className="poster-content">
             <div className="poster-status">{delivery.status === "READY" ? "PRIVATE STUDIO DELIVERY" : delivery.status === "FAILED" ? "PACKAGE BEING REVIEWED" : "YOUR PROJECT IS BEING PREPARED"}</div>
             <h1 className="poster-heading">{delivery.status === "READY" ? "YOUR MUSIC IS READY." : delivery.status === "FAILED" ? "DELIVERY IN PROGRESS." : "YOUR PROJECT IS ALMOST READY."}</h1>
             {delivery.previewEnabled ? <AudioPreview token={token} fileName={delivery.previewFileName} artistName={delivery.clientName} /> : <div className="poster-no-preview">Your studio preview is not enabled for this delivery.</div>}
             <div className="poster-action-area">{downloadButton}{downloadError && <p className="poster-feedback poster-error" role="alert">{downloadError}</p>}{feedback && <p className="poster-feedback" role="status">{feedback}</p>}</div>
           </div>
-          <div className="poster-meta"><span>{delivery.referenceNumber}</span><span>{delivery.serviceType}</span><span>{new Date(delivery.deliveryDate).toLocaleDateString()}</span>{delivery.expiresAt && <span>Link expires {new Date(delivery.expiresAt).toLocaleDateString()}</span>}</div>
+          <div className="poster-meta"><span>{delivery.serviceType}</span><span>{new Date(delivery.deliveryDate).toLocaleDateString()}</span>{delivery.expiresAt && <span>Link expires {new Date(delivery.expiresAt).toLocaleDateString()}</span>}</div>
           {delivery.message && <p className="poster-note">{delivery.message}</p>}
           <div className="poster-footer">
             <div className="poster-brand-lockup"><BrandLogo name={brandName} logoUrl={brand?.logoUrl ?? null} className="poster-brand-fallback" /><span>{brandName}</span></div>
