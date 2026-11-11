@@ -35,19 +35,19 @@ function HeadphonePortrait() {
     <defs>
       <linearGradient id="headphone-shine" x1="0" x2="1" y1="0" y2="1"><stop stopColor="rgba(var(--brand-accent-rgb),.95)" /><stop offset="1" stopColor="rgba(var(--brand-accent-rgb),.35)" /></linearGradient>
     </defs>
-    <path d="M77 580c20-77 65-124 145-153l47-39 67 8 44 37c54 34 83 79 96 147H77Z" fill="#030504" />
-    <path d="M229 358v92c18 20 70 27 103 2l-13-104-90 10Z" fill="#070b08" />
-    <path d="M176 214c-7-84 37-142 108-145 70-3 116 48 111 135" fill="none" stroke="#111812" strokeWidth="25" strokeLinecap="round" />
-    <path d="M176 214c-7-84 37-142 108-145 70-3 116 48 111 135" fill="none" stroke="url(#headphone-shine)" strokeWidth="3" strokeLinecap="round" />
-    <path d="M193 218c-17-6-28-23-23-40-8-18 1-37 18-45-3-19 11-37 30-39 9-21 32-29 52-17 18-13 42-7 51 12 21-1 37 15 35 36 18 10 23 30 13 47 12 18 6 39-12 50l-17 28-30-28-85 20-30-19Z" fill="#010302" />
+    <path d="M62 580c25-84 73-135 151-162l42-46 80 11 46 37c49 35 77 82 90 160H62Z" fill="#030504" />
+    <path d="M228 344c8 34 10 69 3 102 20 22 69 27 98 3l-11-111-90 6Z" fill="#070b08" />
+    <path d="M184 211c-8-85 35-145 105-147 69-2 111 49 107 135" fill="none" stroke="#111812" strokeWidth="24" strokeLinecap="round" />
+    <path d="M184 211c-8-85 35-145 105-147 69-2 111 49 107 135" fill="none" stroke="url(#headphone-shine)" strokeWidth="3" strokeLinecap="round" />
+    <path d="M201 211c-16-9-24-25-18-42-9-17-2-36 14-47-2-20 11-37 31-41 10-20 32-27 51-16 17-13 41-9 51 10 21-1 36 15 34 35 17 10 22 29 12 46 12 18 8 37-9 50l-27 13-118 13-21-21Z" fill="#010302" />
     <g fill="#010302">
-      <circle cx="202" cy="128" r="27" /><circle cx="227" cy="101" r="29" /><circle cx="261" cy="91" r="31" />
-      <circle cx="294" cy="100" r="30" /><circle cx="319" cy="125" r="27" /><circle cx="331" cy="154" r="25" />
+      <circle cx="201" cy="139" r="25" /><circle cx="223" cy="112" r="28" /><circle cx="256" cy="99" r="31" />
+      <circle cx="288" cy="105" r="29" /><circle cx="315" cy="127" r="27" /><circle cx="328" cy="156" r="24" />
     </g>
-    <path d="M321 151c-27-17-68-15-94 4-21 15-29 37-29 62l-3 20-40 29c-6 7 0 12 16 15l-22 14c-5 5 1 11 16 13l-11 13c-2 7 7 12 22 14 6 26 23 45 47 56l-1 50c-17 23-46 38-80 51l-34 40h267c-15-62-49-103-102-129l-28-12-5-39c38-16 51-54 44-104-2-22-6-39-12-53Z" fill="#121a14" stroke="rgba(var(--brand-accent-rgb),.3)" strokeWidth="2.5" strokeLinejoin="round" />
-    <path d="M359 183c20 4 31 22 30 47l-2 33c-1 22-14 37-34 39l-11-11 7-98 10-10Z" fill="#111812" stroke="url(#headphone-shine)" strokeWidth="4" />
-    <ellipse cx="358" cy="235" rx="12" ry="34" fill="#070b08" />
-    <path d="M377 300c-8 65-39 104-86 130" fill="none" stroke="rgba(var(--brand-accent-rgb),.4)" strokeWidth="2" />
+    <path d="M320 151c-20-13-51-16-75-7-20 8-34 23-39 44-4 12-9 21-18 28l-18 15c-5 5-2 10 9 13l11 3-14 9c-5 5-2 9 8 12l8 3-8 9c-2 6 5 10 17 11 6 24 22 40 44 49l-1 37c-18 24-47 40-81 53l-36 34h291c-15-58-47-97-96-122-28-14-42-39-44-71l-1-42c25-14 38-42 38-79 0-19-2-34-4-49Z" fill="#080b09" stroke="rgba(var(--brand-accent-rgb),.24)" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M356 186c19 4 29 21 28 44l-2 31c-1 21-13 35-32 38l-12-9 7-94 11-10Z" fill="#101511" stroke="url(#headphone-shine)" strokeWidth="4" />
+    <ellipse cx="353" cy="230" rx="12" ry="31" fill="#080b09" />
+    <path d="M374 296c-9 59-38 96-82 123" fill="none" stroke="rgba(var(--brand-accent-rgb),.38)" strokeWidth="2" />
   </svg>;
 }
 

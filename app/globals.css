@@ -154,8 +154,8 @@ tbody tr:hover { background: #ffffff05; }
 .poster-main { min-height: 100svh; display: flex; flex-direction: column; }
 .delivery-poster { position: relative; isolation: isolate; display: flex; flex-direction: column; width: min(100%, 920px); min-height: 100svh; margin: 0 auto; padding: clamp(18px, 4vh, 42px) clamp(20px, 6vw, 72px) 23px; overflow: hidden; }
 .poster-portrait { position: absolute; z-index: 2; top: clamp(130px, 27vh, 260px); left: 50%; width: auto; height: min(74vh, 620px); max-width: 94vw; aspect-ratio: 520 / 580; transform: translateX(-50%); overflow: visible; filter: drop-shadow(0 16px 38px rgba(0, 0, 0, .74)); }
-.poster-brand-emblem { position: absolute; z-index: 1; top: clamp(20px, 4vh, 45px); left: 50%; width: min(56vh, 460px) !important; height: min(56vh, 460px) !important; max-width: 84vw !important; max-height: 60vh !important; transform: translateX(-50%); object-fit: contain; filter: drop-shadow(0 0 9px rgba(var(--brand-accent-rgb), .72)) drop-shadow(0 0 25px rgba(var(--brand-accent-rgb), .42)); }
-.poster-brand-emblem-fallback { position: absolute; z-index: 1; top: clamp(20px, 4vh, 45px); left: 50%; display: grid; width: min(56vh, 460px); aspect-ratio: 1; place-items: center; transform: translateX(-50%); color: rgb(var(--brand-accent-rgb)); font-size: clamp(24px, 5vw, 44px); font-weight: 850; letter-spacing: -.06em; text-shadow: 0 0 16px rgba(var(--brand-accent-rgb), .72), 0 0 36px rgba(var(--brand-accent-rgb), .42); }
+.poster-brand-emblem { position: absolute; z-index: 1; top: clamp(20px, 4vh, 45px); left: 50%; width: min(86vw, 74vh, 640px) !important; height: min(86vw, 74vh, 640px) !important; max-width: 94vw !important; max-height: 74vh !important; transform: translateX(-50%); object-fit: contain; filter: drop-shadow(0 0 9px rgba(var(--brand-accent-rgb), .72)) drop-shadow(0 0 25px rgba(var(--brand-accent-rgb), .42)); }
+.poster-brand-emblem-fallback { position: absolute; z-index: 1; top: clamp(20px, 4vh, 45px); left: 50%; display: grid; width: min(86vw, 74vh, 640px); aspect-ratio: 1; place-items: center; transform: translateX(-50%); color: rgb(var(--brand-accent-rgb)); font-size: clamp(24px, 5vw, 44px); font-weight: 850; letter-spacing: -.06em; text-shadow: 0 0 16px rgba(var(--brand-accent-rgb), .72), 0 0 36px rgba(var(--brand-accent-rgb), .42); }
 .poster-brand-emblem-fallback > span { align-self: center; }
 .poster-content { position: relative; z-index: 3; width: min(470px, 100%); margin: clamp(320px, 58vh, 540px) auto 0; text-align: center; }
 .poster-status { color: rgba(var(--brand-accent-rgb), .95); font-size: 9px; font-weight: 650; letter-spacing: .22em; }
@@ -225,8 +225,8 @@ tbody tr:hover { background: #ffffff05; }
   .delivery-footer { flex-direction: column; }
   .delivery-poster { padding: 20px 20px 18px; }
   .poster-portrait { top: clamp(150px, 27vh, 220px); height: min(68vh, 500px); max-width: 94vw; }
-  .poster-brand-emblem { top: 34px; width: min(56vh, 390px) !important; height: min(56vh, 390px) !important; max-width: 84vw !important; max-height: 54vh !important; }
-  .poster-brand-emblem-fallback { top: 34px; width: min(56vh, 390px); }
+  .poster-brand-emblem { top: 34px; width: min(86vw, 74vh, 640px) !important; height: min(86vw, 74vh, 640px) !important; max-width: 94vw !important; max-height: 74vh !important; }
+  .poster-brand-emblem-fallback { top: 34px; width: min(86vw, 74vh, 640px); }
   .poster-content { margin-top: clamp(320px, 58vh, 440px); }
   .poster-footer { padding-top: 19px; }
   .poster-connect { gap: 11px 14px; }
