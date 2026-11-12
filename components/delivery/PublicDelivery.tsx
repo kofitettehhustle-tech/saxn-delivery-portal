@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, FormEvent, useCallback, useEffect, useState } from "react";
+import { CSSProperties, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 
 type Delivery = { id: string; clientName: string; trackTitle: string; serviceType: string; message: string | null; status: string; zipFilename: string | null; zipSize: number | null; archives: { id: string; filename: string; fileSize: number }[]; previewEnabled: boolean; previewFileName: string | null; previewMimeType: string | null; previewFiles: { filename: string; mimeType: string; category: string }[]; deliveryDate: string; referenceNumber: string; expiresAt: string | null; requiresPassword: boolean; passwordVerified: boolean };
@@ -31,7 +31,21 @@ function SocialIcon({ name }: { name: string }) {
 
 function ArtworkCarousel({ files, selected, onSelect }: { files: Delivery["previewFiles"]; selected: number; onSelect: (index: number) => void }) {
   const activeFiles = files.length ? files : [{ filename: "Audio preview", mimeType: "audio/mpeg", category: "" }];
-  return <div className={`poster-carousel${activeFiles.length === 1 ? " poster-carousel-single" : ""}`} aria-label="Delivery files">
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 740px)").matches) return;
+    const carousel = carouselRef.current;
+    const card = cardRefs.current[selected];
+    if (!carousel || !card) return;
+    const carouselRect = carousel.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    carousel.scrollTo({
+      left: carousel.scrollLeft + cardRect.left - carouselRect.left - (carousel.clientWidth - cardRect.width) / 2,
+      behavior: "smooth",
+    });
+  }, [selected, activeFiles.length]);
+  return <div ref={carouselRef} className={`poster-carousel${activeFiles.length === 1 ? " poster-carousel-single" : ""}`} aria-label="Delivery files">
     {activeFiles.map((file, index) => {
       let offset = index - selected;
       if (activeFiles.length > 2) {
@@ -41,15 +55,14 @@ function ArtworkCarousel({ files, selected, onSelect }: { files: Delivery["previ
       const visible = Math.abs(offset) <= 2;
       const offsetScale = Math.max(0.7, 1 - Math.abs(offset) * 0.13);
       return <button
-        className={`poster-art-card${offset === 0 ? " is-active" : ""}`}
+        ref={(element) => { cardRefs.current[index] = element; }}
+        className={`poster-art-card${offset === 0 ? " is-active" : ""}${visible ? "" : " is-out-of-range"}`}
         key={`${file.filename}-${index}`}
         type="button"
         style={{ transform: `translate(calc(-50% + ${offset * 135}px), -50%) scale(${offsetScale})`, opacity: Math.max(0.18, 1 - Math.abs(offset) * 0.22), zIndex: 5 - Math.abs(offset) } as CSSProperties}
         aria-label={`Show ${file.filename}`}
         aria-pressed={offset === 0}
-        tabIndex={visible ? 0 : -1}
         onClick={() => onSelect(index)}
-        hidden={!visible}
       >
         <span className="poster-art-graphic" aria-hidden="true"><span className="poster-art-symbol">♪</span></span>
         <span className="poster-art-caption"><strong>{file.filename.replace(/\.[^.]+$/, "")}</strong><small>{file.category.replace(/^\d+_/, "").replace(/_/g, " ") || file.mimeType.split("/")[0]}</small></span>
