@@ -294,21 +294,61 @@ tbody tr:hover { background: #ffffff05; }
   .delivery-main { padding: 46px 0 58px; }
   .delivery-columns { grid-template-columns: 1fr; }
   .delivery-footer { flex-direction: column; }
-  .delivery-poster { padding: 20px 18px 18px; }
-  .poster-carousel { height: clamp(300px, 40vh, 360px); }
-  .poster-art-card { width: clamp(138px, 42vw, 180px); height: clamp(205px, 30vh, 250px); }
-  .poster-art-card.is-active { width: clamp(175px, 52vw, 220px); height: clamp(250px, 36vh, 300px); }
-  .poster-content { width: 100%; margin: 6px auto 0; }
-  .poster-player { gap: 4px; padding: 9px 10px; }
-  .poster-skip { width: 22px; font-size: 17px; }
-  .poster-skip small { top: 10px; left: 7px; font-size: 5px; }
-  .poster-play { width: 31px; height: 31px; }
-  .poster-footer { padding-top: 18px; }
+  .delivery-poster { grid-template-rows: auto auto auto auto auto; align-content: start; padding: 18px 16px 16px; }
+  .poster-brand-header { min-height: 34px; margin-bottom: 8px; font-size: 15px; }
+  .poster-carousel { height: clamp(255px, 34svh, 280px); }
+  .poster-art-card { width: clamp(130px, 38vw, 155px); height: clamp(165px, 25svh, 185px); padding: 7px; border-radius: 14px; }
+  .poster-art-card.is-active { width: clamp(145px, 44vw, 180px); height: clamp(175px, 28svh, 195px); }
+  .poster-art-card:not(.is-active) { visibility: hidden; }
+  .poster-art-caption { gap: 2px; padding: 7px 3px 1px; }
+  .poster-art-caption strong { font-size: 11px; }
+  .poster-art-caption small { font-size: 9px; }
+  .poster-art-symbol { font-size: clamp(58px, 17vw, 78px); }
+  .poster-carousel-controls { bottom: 0; gap: 12px; font-size: 10px; }
+  .poster-carousel-controls button { width: 25px; height: 25px; font-size: 18px; }
+  .poster-content { width: 100%; min-width: 0; margin: 4px auto 0; }
+  .poster-player { flex-wrap: wrap; gap: 3px; padding: 6px 8px; }
+  .poster-track-info { gap: 6px; }
+  .poster-track-mark { width: 25px; height: 25px; font-size: 14px; }
+  .poster-track-title { font-size: 10px; }
+  .poster-track-artist { font-size: 8px; }
+  .poster-seek { margin-top: 5px; }
+  .poster-time-row { font-size: 8px; }
+  .poster-skip { width: 32px; height: 32px; font-size: 14px; }
+  .poster-skip small { top: 12px; left: 11px; font-size: 5px; }
+  .poster-play { width: 30px; height: 30px; font-size: 12px; }
+  .poster-audio-error { flex: 1 0 100%; margin-top: 2px; text-align: center; }
+  .poster-action-area { width: 100%; margin-top: 8px; }
+  .poster-download { white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
+  .poster-note { overflow-wrap: anywhere; }
+  .poster-footer { flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 14px; }
+  .poster-social-links { flex-wrap: wrap; gap: 10px; }
+  .poster-artist-lockup strong { max-width: calc(100vw - 32px); }
   .login-panel { padding: 28px 23px; }
   .file-row { grid-template-columns: minmax(0, 1fr) 105px 35px; }
   .file-row .file-size { display: none; }
 }
-@media (max-width: 420px) { .stats-grid { grid-template-columns: 1fr 1fr; } .status { font-size: 8px; } .audio-player { grid-template-columns: auto minmax(0, 1fr); } .audio-player .audio-times-wrap { grid-column: 1 / -1; } }
+@media (max-width: 740px) and (max-height: 600px) {
+  .delivery-poster { padding-top: 12px; }
+  .poster-brand-header { min-height: 30px; margin-bottom: 6px; }
+  .poster-carousel { height: 240px; }
+  .poster-art-card { height: 150px; }
+  .poster-art-card.is-active { height: 165px; }
+  .poster-art-card:not(.is-active) { visibility: hidden; }
+  .poster-carousel-controls { bottom: 0; }
+  .poster-content { margin-top: 4px; }
+  .poster-footer { padding-top: 12px; }
+}
+@media (max-width: 420px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .status { font-size: 8px; }
+  .audio-player { grid-template-columns: auto minmax(0, 1fr); }
+  .audio-player .audio-times-wrap { grid-column: 1 / -1; }
+  .delivery-poster { padding-right: 13px; padding-left: 13px; }
+  .poster-player { padding-right: 6px; padding-left: 6px; }
+  .poster-skip { width: 29px; }
+  .poster-artist-lockup strong { max-width: calc(100vw - 26px); }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
 
 .admin-shell.app-shell { grid-template-columns: 82px minmax(0, 1fr); background: radial-gradient(ellipse at 82% 0%, rgba(42, 157, 166, .12), transparent 34%), var(--obsidian); }
