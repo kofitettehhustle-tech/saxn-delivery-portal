@@ -189,7 +189,17 @@ async function processJob(job: { job_id: string; delivery_id: string; attempts: 
     const { data: completeResult, error: completedError } = await db.rpc("complete_processing_job_with_archives", {
       p_job_id: job.job_id, p_archives: archiveMetadata, p_preview_path: previewPath, p_preview_size: previewSize,
     });
-    if (completedError || completeResult !== true) throw new Error("Validated archive could not be finalized; delivery was not marked READY.");
+    if (completedError) {
+      const detail = [completedError.code, completedError.message, completedError.details, completedError.hint]
+        .filter((value) => typeof value === "string" && value.length)
+        .join(": ");
+      throw new Error(`Archive completion RPC failed${detail ? `: ${detail}` : "."}`);
+    }
+    if (completeResult !== true) {
+      const { data: jobState, error: jobStateError } = await db.from("processing_jobs").select("error_message").eq("id", job.job_id).maybeSingle();
+      if (jobStateError) throw jobStateError;
+      throw new Error(jobState?.error_message || "Validated archive could not be finalized; delivery was not marked READY.");
+    }
     const { error: oldArchiveCleanupError } = previousArchivePaths.length
       ? await db.storage.from(buckets.archives).remove([...new Set(previousArchivePaths)].filter((path) => !uploadedArchivePaths.includes(path)))
       : { error: null };

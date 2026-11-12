@@ -17,6 +17,7 @@ Status: core application implementation and documentation are in place; final st
 
 ## 3. ZIP packaging worker
 - [x] Separate Node worker using an atomic PostgreSQL job claim and streaming Archiver; no browser archive or serverless packaging function.
+- [x] Keep each ZIP below the storage object limit by grouping MP3s, packaging WAV files individually, and batching other files by category.
 - [x] Organize files by `01_FINAL_MASTERS`, `02_INSTRUMENTALS`, `03_STEMS`, `04_EXTRAS`; collision-safe filenames; include `DELIVERY_NOTES.txt`; no empty category folders.
 - [x] Safe entry-path checks, ZIP entry read/integrity validation, private archive bucket upload, READY only on atomic worker completion, retries, failure recording, cleanup and health endpoint.
 - [x] Optional FFmpeg WAV-to-MP3 preview conversion on worker hosts where FFmpeg is installed; compatible WAV fallback does not block ZIPs.

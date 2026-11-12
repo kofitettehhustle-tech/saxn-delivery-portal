@@ -20,7 +20,7 @@ Database relations are loaded through explicit, batched server-side queries rath
 - `components/`: configurable brand logo component; text-only SAXN wordmark until the official emblem is uploaded.
 - `lib/`: Supabase browser/server/service clients, session/role checks, cryptographic token/password utilities, validation, rate limiting, filename safety, configuration and provider-neutral private-storage adapter contract with Supabase as the active adapter.
 - `worker/`: separate Node process, database job-claim loop, streaming Archiver processor, optional FFmpeg preview transcoding, private storage adapter and health endpoint.
-- `supabase/migrations/`: four additive SQL migrations for core schema/RLS/private buckets, storage policy/worker RPC, preview and worker hardening, and bounded dashboard metrics. No production test data is seeded.
+- `supabase/migrations/`: ordered additive SQL migrations for core schema/RLS/private buckets, storage policy/worker RPC, preview and worker hardening, bounded dashboard metrics and size-bounded split delivery archives. No production test data is seeded.
 - `tests/`: unit checks for token/filename/MIME/formatting utilities. Integration runs require credentials in an isolated Supabase test project; do not run destructive tests against shared production data.
 - `README.md`, `.env.example`, `.npmrc`, package scripts: exact prerequisites, package install, first-admin provisioning, migration order, worker/deployment, backups and troubleshooting without real secrets.
 
