@@ -39,13 +39,12 @@ function ArtworkCarousel({ files, selected, onSelect }: { files: Delivery["previ
         if (offset < -activeFiles.length / 2) offset += activeFiles.length;
       }
       const visible = Math.abs(offset) <= 2;
-      const hue = (index * 47 + 28) % 360;
       const offsetScale = Math.max(0.7, 1 - Math.abs(offset) * 0.13);
       return <button
         className={`poster-art-card${offset === 0 ? " is-active" : ""}`}
         key={`${file.filename}-${index}`}
         type="button"
-        style={{ "--card-hue": hue, transform: `translate(calc(-50% + ${offset * 135}px), -50%) scale(${offsetScale})`, opacity: Math.max(0.18, 1 - Math.abs(offset) * 0.22), zIndex: 5 - Math.abs(offset) } as CSSProperties}
+        style={{ transform: `translate(calc(-50% + ${offset * 135}px), -50%) scale(${offsetScale})`, opacity: Math.max(0.18, 1 - Math.abs(offset) * 0.22), zIndex: 5 - Math.abs(offset) } as CSSProperties}
         aria-label={`Show ${file.filename}`}
         aria-pressed={offset === 0}
         tabIndex={visible ? 0 : -1}
@@ -85,7 +84,7 @@ function AudioPreview({ token, fileName, artistName }: { token: string; fileName
 }
 
 export function PublicDelivery({ token }: { token: string }) {
-  const [payload, setPayload] = useState<Payload | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [password, setPassword] = useState(""); const [busy, setBusy] = useState(false); const [feedback, setFeedback] = useState(""); const [downloadError, setDownloadError] = useState(""); const [brandAccent, setBrandAccent] = useState("22, 216, 112");
+  const [payload, setPayload] = useState<Payload | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [password, setPassword] = useState(""); const [busy, setBusy] = useState(false); const [feedback, setFeedback] = useState(""); const [downloadError, setDownloadError] = useState("");
   const [selectedCard, setSelectedCard] = useState(0);
   const load = useCallback(async () => {
     setLoading(true);
@@ -114,40 +113,7 @@ export function PublicDelivery({ token }: { token: string }) {
     setSelectedCard(Math.max(previewIndex, 0));
   }, [delivery]);
   const socialEntries = Object.entries(socials).filter(([, url]) => typeof url === "string" && url.length > 0);
-  useEffect(() => {
-    if (!brand?.logoUrl) { setBrandAccent("22, 216, 112"); return; }
-    let active = true;
-    const image = new window.Image();
-    image.crossOrigin = "anonymous";
-    image.onload = () => {
-      try {
-        const canvas = document.createElement("canvas"); canvas.width = 48; canvas.height = 48;
-        const context = canvas.getContext("2d", { willReadFrequently: true }); if (!context) return;
-        context.drawImage(image, 0, 0, 48, 48);
-        const pixels = context.getImageData(0, 0, 48, 48).data;
-        const colors = new Map<number, { count: number; r: number; g: number; b: number }>();
-        for (let i = 0; i < pixels.length; i += 4) {
-          const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2], alpha = pixels[i + 3];
-          const max = Math.max(r, g, b), min = Math.min(r, g, b);
-          if (alpha < 180 || max < 55 || max > 248) continue;
-          if ((max - min) / max < 0.2) continue;
-          const hue = Math.round((Math.atan2(Math.sqrt(3) * (g - b), 2 * r - g - b) * 180 / Math.PI + 360) % 360);
-          const bucket = Math.floor(hue / 15);
-          const color = colors.get(bucket) ?? { count: 0, r: 0, g: 0, b: 0 };
-          color.count++; color.r += r; color.g += g; color.b += b; colors.set(bucket, color);
-        }
-        const dominant = [...colors.values()].sort((a, b) => b.count - a.count)[0];
-        const sampled = dominant;
-        if (active) setBrandAccent(sampled ? `${Math.round(sampled.r / sampled.count)}, ${Math.round(sampled.g / sampled.count)}, ${Math.round(sampled.b / sampled.count)}` : "22, 216, 112");
-      } catch {
-        if (active) setBrandAccent("22, 216, 112");
-      }
-    };
-    image.onerror = () => { if (active) setBrandAccent("22, 216, 112"); };
-    image.src = brand.logoUrl;
-    return () => { active = false; };
-  }, [brand?.logoUrl]);
-  const themeStyle = { "--brand-accent-rgb": brandAccent } as CSSProperties;
+  const themeStyle = { "--brand-accent-rgb": "252, 147, 31" } as CSSProperties;
   const brandName = brand?.brandName || "SAXN";
   const downloadButtons = delivery?.status === "READY"
     ? delivery.archives.length

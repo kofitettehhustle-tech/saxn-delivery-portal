@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CSSProperties, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { formatBytes } from "@/lib/validation";
 
 type DashboardStats = { total: number; ready: number; downloaded: number; awaiting: number; expired: number; revoked: number; storageBytes: number };
