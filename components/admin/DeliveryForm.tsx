@@ -72,7 +72,7 @@ export function DeliveryForm() {
     setNotice(`${verifiedBody.fileCount} file${verifiedBody.fileCount === 1 ? "" : "s"} verified. Starting ZIP packaging…`);
     const response = await fetch(`/api/admin/deliveries/${currentId}/package`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
     const body = await response.json(); if (!response.ok) throw new Error(body.error || "Could not queue packaging.");
-    setPrivateLink(body.url || ""); setNotice("Packaging is queued in the background. The delivery link is active, but share it only after the archive reaches READY.");
+    setPrivateLink(body.url || ""); setNotice(`${body.shorteningWarning ? `${body.shorteningWarning} ` : ""}Packaging is queued in the background. The delivery link is active, but share it only after the archive reaches READY.`);
   }
 
   async function submit(event: FormEvent) {

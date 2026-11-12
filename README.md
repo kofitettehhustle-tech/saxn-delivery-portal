@@ -65,6 +65,8 @@ The worker loads `.env.local` through Next's environment loader. It exposes `/he
 
 Required `.env.local` values are `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `DELIVERY_COOKIE_SECRET`. Generate the cookie secret locally with a cryptographic random generator (for example, Node `crypto.randomBytes(32)`); do not use the example placeholder. Optional bucket names/worker limits can remain at defaults. Environment variables are read at process start; restart app and worker after changes.
 
+Automatic Short.io links are optional. Set `SHORTIO_API_KEY` and `SHORTIO_DOMAIN` in the Vercel project environment variables (or local `.env.local` for local testing), then redeploy/restart. The domain is the verified Short.io hostname only, without `https://` or a path. Delivery link issuance uses Short.io when configured and falls back to the full canonical delivery URL with an admin-visible warning if Short.io is missing or unavailable. Short.io receives and stores the destination URL, which contains the private delivery bearer token; secure the Short.io account/API key accordingly.
+
 ## Delivery worker
 
 Build/run the same repository on a long-lived Node host with its own copies of the worker's server-side secrets:
@@ -79,7 +81,7 @@ Set the Supabase project URL, service-role key, bucket names, `WORKER_POLL_INTER
 
 ## Production deployment
 
-1. Build/publish the Next.js application through the chosen host (for example Vercel) using the repository's normal `npm run build`/`npm start` scripts. Configure the four required environment values and private bucket names in the host secret manager. Private links use Vercel's production domain when system environment variables are enabled. Set `PUBLIC_APP_URL` to the canonical HTTPS origin to guarantee production links, or when deploying elsewhere.
+1. Build/publish the Next.js application through the chosen host (for example Vercel) using the repository's normal `npm run build`/`npm start` scripts. Configure the required environment values, private bucket names, and (if using Short.io) `SHORTIO_API_KEY` and `SHORTIO_DOMAIN` in the host secret manager. Private links use Vercel's production domain when system environment variables are enabled. Set `PUBLIC_APP_URL` to the canonical HTTPS origin to guarantee production links, or when deploying elsewhere.
 2. Deploy `worker/` as a separate persistent process from the same revision, with server-only Supabase credentials. Build with `npm run worker:build`; `npm run worker:start` launches the compiled entry point. Do not schedule ZIP jobs in short-lived serverless request handlers.
 3. Add the custom HTTPS domain, set Supabase Auth site/redirect URLs to the exact production origin, verify signed upload/download flows, and check web and worker health endpoints.
 4. Test with non-sensitive test audio before client data. Verify password/expiration/revocation, archive contents, preview authorization, signed URL expiry, download-request records, cleanup protections and worker retry behavior.

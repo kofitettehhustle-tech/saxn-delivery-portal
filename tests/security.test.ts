@@ -5,6 +5,7 @@ import { createDeliveryUrl } from "../lib/publicUrl";
 import { allowedMime, safeArchiveFolder, safeArchivePath, safeFilename, formatBytes } from "../lib/validation";
 import { supabaseStorageUploadEndpoint } from "../lib/supabase/config";
 import { MAX_ARCHIVE_SIZE_BYTES, planDeliveryArchives } from "../lib/archivePackaging";
+import { createDeliveryShareUrl } from "../lib/shortio";
 
 test("delivery tokens are unpredictable base64url bearer credentials with stable hashes", () => {
   const first = newDeliveryToken(); const second = newDeliveryToken();
@@ -27,6 +28,74 @@ test("private delivery URLs use the production domain on preview deployments", (
       PUBLIC_APP_URL: "http://public.example.com",
     }),
   );
+});
+
+test("delivery links use Short.io automatically when configured", async () => {
+  const captured: { request?: { url: string; authorization: string; body: { originalURL: string; domain: string; allowDuplicates: boolean } } } = {};
+  const result = await createDeliveryShareUrl(
+    "private-token",
+    "https://preview.vercel.app/api",
+    { VERCEL_PROJECT_PRODUCTION_URL: "project.vercel.app", SHORTIO_API_KEY: "server-secret", SHORTIO_DOMAIN: "go.example.com" },
+    async (url, init) => {
+      captured.request = {
+        url: String(url),
+        authorization: new Headers(init?.headers).get("Authorization") ?? "",
+        body: JSON.parse(String(init?.body)),
+      };
+      return new Response(JSON.stringify({ shortURL: "https://go.example.com/abc123" }), { status: 200 });
+    },
+  );
+  assert.equal(result.url, "https://go.example.com/abc123");
+  assert.equal(result.shortened, true);
+  assert.equal("shorteningWarning" in result, false);
+  assert.equal(captured.request?.url, "https://api.short.io/links");
+  assert.equal(captured.request?.authorization, "server-secret");
+  assert.deepEqual(captured.request?.body, {
+    originalURL: "https://project.vercel.app/d/private-token",
+    domain: "go.example.com",
+    allowDuplicates: false,
+  });
+});
+
+test("delivery links fall back to their canonical URL with a warning when Short.io is not configured", async () => {
+  let called = false;
+  const result = await createDeliveryShareUrl(
+    "private-token",
+    "https://preview.vercel.app/api",
+    { VERCEL_PROJECT_PRODUCTION_URL: "project.vercel.app" },
+    async () => {
+      called = true;
+      return new Response(null, { status: 500 });
+    },
+  );
+  assert.equal(result.url, "https://project.vercel.app/d/private-token");
+  assert.equal(result.shortened, false);
+  assert.match(result.shorteningWarning ?? "", /SHORTIO_API_KEY and SHORTIO_DOMAIN/);
+  assert.equal(called, false);
+});
+
+test("delivery links fall back to the full URL with a warning when Short.io rejects a request", async () => {
+  const result = await createDeliveryShareUrl(
+    "private-token",
+    "https://project.vercel.app/api",
+    { SHORTIO_API_KEY: "server-secret", SHORTIO_DOMAIN: "go.example.com" },
+    async () => new Response(null, { status: 401 }),
+  );
+  assert.equal(result.url, "https://project.vercel.app/d/private-token");
+  assert.equal(result.shortened, false);
+  assert.match(result.shorteningWarning ?? "", /HTTP 401/);
+});
+
+test("delivery links do not accept unexpected Short.io domains", async () => {
+  const result = await createDeliveryShareUrl(
+    "private-token",
+    "https://project.vercel.app/api",
+    { SHORTIO_API_KEY: "server-secret", SHORTIO_DOMAIN: "go.example.com" },
+    async () => new Response(JSON.stringify({ shortURL: "https://attacker.example/abc123" }), { status: 200 }),
+  );
+  assert.equal(result.url, "https://project.vercel.app/d/private-token");
+  assert.equal(result.shortened, false);
+  assert.match(result.shorteningWarning ?? "", /unexpected domain/);
 });
 
 test("resumable uploads use the direct Supabase Storage hostname", () => {
